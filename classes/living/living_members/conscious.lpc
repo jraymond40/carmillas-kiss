@@ -1,0 +1,57 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    conscious.c                                              \\
+//                                                                       \\
+// Description: Everything related to being "conscious" and interactions \\
+//              with and perceptions of the environment.                 \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/06/93  jmr  Created                                                \\
+// 08/23/94  jmr  Added restart()                                        \\
+//                                                                       \\
+//============= Copyright 1994 ===== Raymond Interactive Theatre, Ltd. ==\\
+//                                                                       \\  
+// unconscious         - Handles all to be done while in this state      \\  
+// conscious           - Returns true if the player is conscious         \\  
+// consciousness       - Allows the player to return to consciousness    \\  
+//                                                                       \\  
+//=======================================================================\\
+
+#include <std_defs.h>
+
+private nosave status conscious;    // Are we currently conscious?
+
+// Hmm we should perceive nothing from our environment, but since I'm not 
+// quite certain how to selectively filter info just yet, we'll just 
+// make it so the player can't enter commands for the short time they
+// unconscious.
+
+void unconscious(int how_long)
+{
+   call_out("consciousness", how_long);   
+   conscious = FALSE;
+//   disable_commands(); // This will make us invisible to find_living() - bad
+   return;
+}
+
+//
+// We are alive and taking commands
+//
+void consciousness()
+{
+   enable_commands(); 
+   conscious = TRUE;
+   return;
+}
+
+//
+// Are we conscious? 
+//
+status conscious()
+{
+   return(conscious);
+}
+
+void restart() { conscious(); }
+

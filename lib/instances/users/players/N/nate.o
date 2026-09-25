@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Nate"
+long_desc "A player named nate."
+obj_type 4
+names ({"nate","yourself","Nate",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 1
+closed 1
+closable 1
+volume_contained 999
+gender ""
+name "nate"
+human_type 2
+password "vivXarYKaCjo2"
+dflt_costume "nate"
+costume_names ({"nate",})
+costume_descriptions ({"A player named nate.",})
+ticketholder_name "nate"
+total_usage 3102

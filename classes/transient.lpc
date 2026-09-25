@@ -1,0 +1,77 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    transient.c                                              \\
+//                                                                       \\
+// Description: Functions/Attributes of transient classes.               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/18/93  jmr  Original creation                                      \\
+// 09/05/93  jmr  Seperated "object" from transient.                     \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+// create()                                                              \\
+// move()                                                                \\
+//                                                                       \\
+//=======================================================================\\
+*/
+#include <std_defs.h>
+
+#define TRANSIENT_DEBUG FALSE
+
+void create()
+{
+   this_object()->set_transiency(TRANSIENT);
+}
+
+string move(object dest) 
+{
+   string result;
+   object environ;
+   object this_obj;
+  
+   this_obj = this_object();
+   environ  = environment(this_obj);
+
+   /* We must have both a suitable and accepting destination */
+   if (!dest)
+   { 
+      if (TRANSIENT_DEBUG) write (this_obj->query_short() + 
+         "::transient -  Can't move, location not found.\n");
+      return "heading towards an area currently under construction";
+   }
+   if ((int) dest->query_holder() != TRUE) 
+   { 
+      if (TRANSIENT_DEBUG) write (this_obj->query_short() + 
+         "::transient -  Can't move, destination not a holder.\n");
+      return "impossible";
+   }
+   if (living(this_obj) && living(dest))
+   { 
+      if (TRANSIENT_DEBUG) write (this_obj->query_short() + 
+         "::transient -  Can't move, object and destination are living.\n");
+      return "too awkward";
+   }
+
+   /*
+   // If we move out of something, remove the burden we were
+   // imposing on our environment.
+   */
+   if (environ) environ->remove_from_contents( this_obj );
+   result = (string) dest->add_to_contents( this_obj );
+   if (result != SUCCEED_STR)
+   { 
+      if (TRANSIENT_DEBUG) write (this_obj->query_short() + 
+         "::transient -  Can't move, destinations message: " + result + "\n");
+      return result;
+   }
+
+   move_object(this_obj, dest);
+   result = SUCCEED_STR;
+
+   if (TRANSIENT_DEBUG) write (this_obj->query_short() + 
+      "::transient -  Move succeeded, message: " + result + "\n");
+   return result;
+}

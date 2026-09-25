@@ -1,0 +1,93 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    get.c                                                    \\
+//                                                                       \\
+// Description: The function to get/drop objects.                        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/21/93  jmr                                                         \\
+// 01/14/94  jmr  Revised for use w/PGUI, added present tense verb stuff \\
+// 03/23/94  jmr  Broke out selection_parse                              \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+//=======================================================================\\
+*/
+#include <config.h>
+#include <std_defs.h>
+#include <english.h>
+
+inherit "/classes/living/actions";
+ 
+//
+// When this cmd is selected, set up menu1 with 
+// items appropriate to get.
+//
+private 
+int
+setup_menu1(object tp)
+{
+   tp->menu1("Here", objects_list(tp, 
+      INANIMATE | TRANSIENT | DYNAMIC | STATIC, AND, IMMEDIATE) );
+   return SUCCEED;
+}
+
+//
+// Here`s where we attempt to take this action
+//
+private 
+int
+action_main(string action_str, string *prefix_strs, int present_tense_form)
+{
+   string  cmd, obj_name, verb, adverb, move_msg, fail_reason;
+   object  env, tp, obj, dest;
+   string *str_array;
+   int     succeed;
+
+   tp   = this_player();
+   if (!valid_action(tp)) return FAIL;
+
+   cmd  = query_verb();
+   env  = environment(tp);
+
+   if (!action_str) { notify_fail("Str = " + action_str + "\n"); return FAIL; }
+   str_array = explode( action_str, " ");
+
+   if (! (obj = locally_present(str_array[0], env)) ) 
+   {
+      notify_fail("There is no " + str_array[0] + " here now.\n");
+      return FAIL;
+   }
+   obj_name = specific_obj(obj);
+      
+   verb = "pick";
+   adverb = "up";
+
+   /* Okay, open up our belongings to put something in and closeup again. */
+   tp->set_closed(FALSE);
+   move_msg  = (string) obj->move(tp);
+   tp->set_closed(TRUE);
+
+   if (move_msg == SUCCEED_STR) 
+   {
+      succeed = TRUE; 
+      fail_reason = " ";
+   }
+   else 
+   {
+      succeed = FALSE;
+      fail_reason = " You " + (random(2) > 0 ? "realize" : "find") + " " +
+         obj_name + " is " + move_msg + " for you to pick up and carry about.";
+   }
+
+   effect(LOCAL, tp,
+       prefix_strs[0] + " " + proper_present_tense_verb(verb, 
+          SUBJECT_ONE, present_tense_form, succeed) + " " + adverb + " " + 
+          obj_name + "." + (succeed == TRUE ? "" : fail_reason) + "\n",
+       prefix_strs[1] + " " + proper_present_tense_verb(verb, 
+          SUBJECT_THREE, present_tense_form, succeed) + " " + adverb + " " + 
+          obj_name + ".\n");
+   return SUCCEED;
+}

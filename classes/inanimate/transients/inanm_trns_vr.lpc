@@ -1,0 +1,38 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    inanm_trns_vr.c                                          \\
+//                                                                       \\
+// Description: Inanimate, transient, vamp repellant objects.            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/15/94  jmr  Created                                                \\
+//                                                                       \\
+//==================== Copyright 1994 ===== Raymond Interactive Theatre =\\
+//                                                                       \\  
+// use()                                                                 \\  
+//                                                                       \\  
+//=======================================================================\\
+*/
+
+#include <std_defs.h>
+#include <commons.h>
+
+inherit "/classes/inanimate/transients/inanm_trns";
+inherit "/classes/vamp_repellant";
+
+string* 
+use(object wieldor, object wieldee)
+{
+
+   if (!wieldee) return inanm_trns::use(wieldor, wieldee);
+
+   // Seperate the interactions between vamp_repelling items and vampires.
+   if ((int)   wieldee->query_object_type() != LIVING || 
+       (int)   wieldee->query_role() != VAMPIRE ||
+       (float) (this_object()->query_vamp_repellant()) == 0.0)
+      return inanm_trns::use(wieldor, wieldee);
+
+   else return vamp_repellant::use(wieldor, wieldee);
+}

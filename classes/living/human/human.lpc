@@ -1,0 +1,73 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    human.c                                                  \\
+//                                                                       \\
+// Description: Features of all human (users and NPCs).                  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/28/93  jmr  Created                                                \\
+// 08/31/94  jmr  Wasn't saving human type.                              \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\  
+// initialize()                                                          \\  
+// init_actions()                                                        \\  
+//                                                                       \\  
+//=======================================================================\\
+#include <std_defs.h>
+
+inherit "/classes/virt_init";
+inherit "/classes/living/living";
+inherit "/classes/living/communicate";
+
+private        string name;
+private nosave string cap_name;
+private        int    human_type;
+
+string query_name()             { return name;            }
+string query_cap_name()         { return cap_name;        }
+int    query_human_type()       { return human_type;      }
+void   set_human_type(int type) { human_type = type;      }
+
+void 
+initialize(object where, string who)
+{
+   name = lower_case(who);
+   cap_name = capitalize(name);
+   set_id( ({name, "yourself", cap_name}) );
+   set_short(cap_name);  // Why a short description if it's filled w/ name? 
+   set_living_name(name);
+   living::initialize(where);
+}
+
+void
+init_actions()
+{
+   add_action("say", "*>[say]");
+   add_action("action_handler", "use");
+   add_action("action_handler", "open");
+   add_action("action_handler", "close");
+   add_action("action_handler", "expressions:");
+   add_action("action_handler", "put");
+   add_action("action_handler", "get");
+   add_action("action_handler", "move");
+   living::init_actions();
+}
+
+//
+// Handle the implied *>[say] command.
+//
+int
+say(string str)
+{
+   string *action_strs;
+
+   if (!str) return SUCCEED; // Just return silently.
+   action_strs = ({"", "", ""});
+   format_for_simple_verb(assume_a_verb(str, action_strs), 
+                          action_strs); 
+   communicate(LOCAL, str, action_strs);
+   return SUCCEED;
+}
+   

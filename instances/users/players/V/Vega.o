@@ -1,0 +1,25 @@
+#classes/living/human/users/players/player.c
+short_desc "Vega"
+long_desc "A player named Vega."
+obj_type 4
+names ({"vega","yourself","Vega",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+volume_contained 3
+gender ""
+name "vega"
+human_type 2
+password "rY7/oBVNASWz6"
+dflt_costume "Vega"
+costume_names ({"Vega",})
+costume_descriptions ({"A player named Vega.",})
+ticketholder_name "Vega"
+total_usage 5544

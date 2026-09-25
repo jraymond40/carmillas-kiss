@@ -1,0 +1,264 @@
+//=======================================================================\\
+//                                                                       \\
+// Filename:    html_ui.c                                                \\
+//                                                                       \\
+// Description: The pseudo-graphic user interface.                       \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 12/21/93  jmr  Original                                               \\
+// 08/03/94  jmr  Enhanced quick move interface.                         \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+#include <curses.h>
+#include <pgui.h>
+#include <expressions.h>
+#include <html.h>
+
+#define loc_image_URL THIS_URL
+#define SAID_DATA "said"
+
+// Will an embedded Expect command work here? Don't think so, but I'll try.
+#define UI_HDR "<TITLE>Carmilla's Kiss</TITLE>" \
+   + "<body background=\"" + THIS_URL + "book.JPG\" rgb=\"#000000\" " \
+   + "text=\"#000000\" link=\"#00ffff\" vlink=\"#ffff00\">" \
+   + "<FORM METHOD=\"POST\" ACTION=\"" + THIS_URL + "cgi-bin/sicose_req.exp\">" \
+   + "<INPUT TYPE=\"hidden\" NAME=\"state\" VALUE=\"[pid]\">"
+#define UI_FTR "<INPUT NAME=\"" + SAID_DATA + "\" SIZE=50> <INPUT TYPE=\"submit\" VALUE=\"Do It.\"> <P></FORM>" 
+//#define UI_DEBUG 
+#define SETUP_MODE      0
+#define NORMAL_MODE     1
+
+inherit "/classes/html_args";
+
+// Prototypes
+private void   take_action();
+
+private nosave winptr   hdrwin, eventwin, ftrwin;
+private nosave mixed   *key;
+private nosave int      length;
+private nosave int      mode = SETUP_MODE;
+private nosave string   systems_cmd;
+
+void
+menu(int menu_num, string title, string *items)
+{
+   int i;
+
+   menu[menu_num] = "<SELECT NAME=\"menu" + menu_num + "\">";
+   menu[menu_num] = menu[menu_num] + "<OPTION SELECTED>" + title;
+   for (i = 0; i < sizeof(items); i++);
+      menu[menu_num] = menu[menu_num] + "<OPTION>" + items[i];
+   menu[menu_num] = menu[menu_num] + "</SELECT>";
+}
+
+void
+update_menu_contents()
+{
+	menu(0, "ACTIONS", actions_list(commands()) );
+	menu(1, "OBJECTS", objects_list(this_object(),
+      INANIMATE | DYNAMIC | STATIC | TRANSIENT | INTRANSIENT, AND, 
+      INVENTORY | IMMEDIATE) );
+	menu(2, "PEOPLE", living_list(this_object()));
+	menu(3, "SAY", EXPRESSIONS);
+}
+
+// Right now, it's based on an entire page update
+// Will work towards updating just changed elements
+// next.
+void
+html_refresh()
+{
+   // Touch all windows and and send them (refresh).
+   touchwin(hdrwin); touchwin(eventwin); touchwin(ftrwin);
+   refresh();
+}
+
+void
+initmapport()
+{
+}
+
+void 
+remove()
+{
+   delwin(hdrwin); delwin(eventwin); delwin(ftrwin);
+   endwin();
+}
+
+void
+ui_setup()
+{
+   systems_cmd = "";
+   menu = allocate(4);
+   key  = allocate(MAX_TEXT);
+
+   // Initialize the terminal
+   raw();                   // Key-at-a-time, w/out interrupt/quit/control-flow
+   noecho();                // Don't auto echo keys to terminal
+   curs_set(0);             // Don't want to see the cursor **N.B. Apparently not VT100 Supported
+   leaveok(stdscr, TRUE);   // Don't worry about the cursor location 
+   scrollok(stdscr, FALSE); // It's not okay to scroll the screen 
+
+   hdrwin   = newwin(5, 80, 0, 0);
+   eventwin = newwin(15, 32, 5, 0);
+   ftrwin   = newwin(4, 80, 20, 0);
+
+   if ((  hdrwin == (winptr) NULL) ||
+       (eventwin == (winptr) NULL) ||
+       (  ftrwin == (winptr) NULL) )
+   {
+      write_file(ERROR_LOG, "html_ui.c: Error, unable to open a window.\n");
+      remove();
+   }
+
+   // Setup the HTML screen 
+   // First set-up the multi-part x-replace 
+   wprintw(hdrwin, HEADER); 
+
+   // Then define the page
+   wprintw(hdrwin, CTSTR + UI_HDR + "<table cellpadding=10><tr><td width=220>");
+
+   // Welcome the user.
+   wprintw(eventwin,
+      "<CENTER><H2>.: Carmilla's Kiss :.<BR>" +
+      ".: Copyright 1994, Raymond Interactive Theatre, All rights reserved. :." + 
+      "<\H2>" + "</td>");
+      
+   // And set-up their menus.
+   update_menu_contents();
+   wprintw(ftrwin, "<td><IMG SRC=" + loc_image_URL + 
+                   environment(this_object())->query_image() + "></td>" + 
+                   "</table>" + menu[0] + menu[1] + menu[2] + "<BR>" + menu[3] +
+                    UI_FTR + BOUNDARYSTR);
+
+   // Temporarily disabled for HTML interface
+   // initmapport(); 
+   // Also will need Direction Buttons 
+
+   effect(LOCAL, this_player(), environment(this_player())->query_long(),
+      this_player()->query_cap_name() + " walks on stage.\n");
+
+   mode = NORMAL_MODE;
+}
+
+// 
+// Sicose sends all event messages to this routine.
+//
+void
+handle_messages(string message)
+{
+	wprintw(eventwin, message);
+	html_refresh();
+}
+
+//
+//  What happens when you hit enter...
+//
+private
+void
+take_action()
+{
+   // Construct the cmd to be sent to the system.
+   systems_cmd = "";
+
+   if (! undefinedp(value = arg["menu0"]))
+      if (arg["menu0"] != "ACTIONS") 
+         systems_cmd = sprintf("%s %s", systems_cmd, arg["menu0"]);
+      
+   if (! undefinedp(value = arg["menu1"]))
+      if (arg["menu1"] != "OBJECTS") 
+         systems_cmd = sprintf("%s %s", systems_cmd, arg["menu1"]);
+      
+   if (! undefinedp(value = arg["menu2"]))
+      if (arg["menu2"] != "PEOPLE") 
+         systems_cmd = sprintf("%s %s", systems_cmd, arg["menu2"]);
+ 
+   if (! undefinedp(value = arg[SAID_DATA]))
+   {
+      if (systems_cmd != "") 
+         systems_cmd = sprintf("%s *>[say] %s", systems_cmd, arg[SAID_DATA]);
+      else systems_cmd = sprintf("*>[say] %s", arg[SAID_DATA]);
+   }
+
+#ifdef UI_DEBUG
+   write (systems_cmd + "\n");
+#endif 
+   command(systems_cmd); 
+   systems_cmd= ""; 
+}
+
+void
+process_input()
+{
+   if (mode == SETUP_MODE) ui_setup(); 
+
+   while((key[length++] = getch()) != ERR && 
+          length < MAX_CHAR_INPUT &&
+          key[length] != EOF);
+
+   if (key[length] != EOF) return;
+
+   else
+   {
+   	  take_action(process_html_args(key, ({}) ));
+      length = 0;
+   }
+}
+
+//
+// The following are maintained merely for compatiblity with the VT100 interface concepts.
+// These settings are immediately over-ridden anyway, but here it is nonetheless.
+//
+void menu1(string title, string *items)   {  menu(1, title, items); }
+void menu2(string title, string *items)   {  menu(2, title, items); }
+
+void
+scroll_map(object curloc, object dstloc)
+{
+   if(!curloc || !dstloc) return;
+   if((int) curloc->query_object_type() != LOCATION ||
+      (int) dstloc->query_object_type() != LOCATION) return;
+      
+   clearw(ftrwin);
+   
+   wprintw(ftrwin, "<td><IMG SRC=" + loc_image_URL + 
+           environment(this_object())->query_image() + "></td>" + 
+           "</table>" + menu[0] + menu[1] + menu[2] + "<BR>" + menu[3] +
+           ui_footer + BOUNDARYSTR);
+   html_refresh();
+   return;
+}
+
+// We've had a new action added.
+void
+actions_update()
+{
+   html_refresh();
+}
+
+winptr
+query_eventwin()
+{
+   return eventwin;
+}
+
+void
+quit()
+{
+   wclear(eventwin);
+   wprintw(eventwin, A_NORMAL, "<CENTER><BR><BR><H2>THE<BR>END<BR><BR><\CENTER>");
+   draw_html_screen();
+}
+
+void
+restart()
+{
+   // This should be inherited and acted upon after living::
+   // since it resets the actions menu.
+   actions_update();
+}
+

@@ -1,0 +1,40 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    bureau/vanity.c                                          \\
+//                                                                       \\
+// Description:                                                          \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/18/94  jmr  Created                                                \\
+// 08/05/94  jmr  Updated to inherit bureau.                             \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/bureau";
+
+void
+create()
+{
+   bureau::create();
+
+   set_id        ( ({"vanity"}) );
+   set_short        ("vanity");
+   set_long         ("It's once elegantly curved, handcrafted form, " +
+                     "like it's deeply marred finish, has seen " +
+                     "better times. Dust and slivers of mirror coat " +
+                     "it's surface.");
+   set_burn_duration(1200); // Sec.    
+   set_weight       (80);   // Kg.  (pointless since it's intransient)
+   set_height       (230);  // cm.  These are looked at to see if the 
+   set_width        (200);  // cm.  potential object to be contained will
+   set_depth        (80);   // cm.  fit within.
+
+   set_transient_list( ({"crucifix"}) );
+
+}

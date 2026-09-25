@@ -1,0 +1,85 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    commons_role.c                                           \\
+//                                                                       \\
+// Description: Defining and Querying the entities chosen commons role.  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 01/19/93  jmr  Original creation                                      \\
+// 08/28/93  jmr  Clean-up                                               \\
+// 08/14/94  jmr  Added vamps drop vamp repellant objects                \\
+// 08/23/94  jmr  Added restart()                                        \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+#include <commons.h>
+#include <config.h>
+#include <std_defs.h>
+
+private nosave int role = WITHDRAW;      /* Which Commons role was chosen */
+private nosave int sips;
+private nosave int gulps;
+private nosave int inhales;
+private nosave int blow_intos;
+private nosave int old_ttl_growth;
+private nosave int old_policers;
+
+void
+restart()
+{
+   role = WITHDRAW;
+   sips = gulps = inhales = blow_intos = old_ttl_growth = old_policers = 0;
+}
+
+int  query_role()             { return role;       }
+int  query_sips()             { return sips;       }
+int  query_gulps()            { return gulps;      }
+int  query_inhales()          { return inhales;    }
+int  query_blow_intos()       { return blow_intos; }
+
+void
+gulped()
+{
+   object tp;
+   object *inv, *vr_inv;
+   int    i, inv_size, vr_inv_size;
+
+   tp = this_player();
+
+   // The user has gulped, start exhibiting some vampire like behaviour
+
+   // We certainly shouldn't have any vamp_repellant objects in our 
+   // possessions.
+   inv = deep_inventory(tp);
+   inv_size = sizeof(inv);
+   vr_inv = allocate(inv_size);
+
+   for (i = 0; i < inv_size; i++)
+      if (inv[i]->query_vamp_repellant() > 0)
+         vr_inv[vr_inv_size++] = inv[i];
+
+   if (vr_inv_size == 0) return;
+
+   for (i = 0; i < vr_inv_size; i++)
+      vr_inv[i]->move(environment(tp));
+
+   effect(INDIV, tp, "Suddenly you begin to feel a burning sensation, coming " +
+      "from somewhere amongst the things you're carrying. Quickly, but " + 
+      "discretely, you fish through your belongings and scald your fingers " + 
+      "as you slip to the floor" + obj_list_phrase(vr_inv) + ".\n");
+}
+
+void 
+set_role(int setting)    
+{ 
+   role = setting;    
+   switch(setting)
+   {
+      case SIP: sips++; break;
+      case GULP: gulps++; gulped(); break;
+      case INHALE: inhales++; break;
+      case BLOW_INTO: blow_intos++; break;
+   }
+}
+

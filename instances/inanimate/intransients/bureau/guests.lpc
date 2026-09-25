@@ -1,0 +1,30 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    bureau/guests.c                                          \\
+//                                                                       \\
+// Description:                                                          \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/05/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/bureau";
+
+void
+create()
+{
+   bureau::create();
+   set_intransient_list( ({"vase"}) );
+}
+
+string
+query_long()
+{
+   return( bureau::query_long() + " A small vase with flowers in it, " + 
+      "sit on top.");
+}

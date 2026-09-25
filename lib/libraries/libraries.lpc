@@ -1,0 +1,21 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    libraries.c                                              \\
+//                                                                       \\
+// Description: Best referred to as dynamically linked libraries         \\
+//              but also known as simul_efuns                            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 09/22/93  jmr    Creation                                             \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+inherit "/libraries/lib_members/effect";
+inherit "/libraries/lib_members/cue";
+inherit "/libraries/lib_members/english";
+inherit "/libraries/lib_members/accessible_objects";
+inherit "/libraries/lib_members/libc";
+inherit "/libraries/lib_members/ctype";
+inherit "/libraries/lib_members/players";
+inherit "/libraries/lib_members/array";

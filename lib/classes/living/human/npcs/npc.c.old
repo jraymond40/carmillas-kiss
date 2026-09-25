@@ -1,0 +1,50 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    npc.c                                                    \\
+//                                                                       \\
+// Description: Functions common to all NPCs.                            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/13/93  jmr  Original                                               \\
+// 08/28/93  jmr  Seperated common 'living' attributes out.              \\
+// 08/25/93  jmr  Added restart.                                         \\
+//                                                                       \\
+//============= Copyright 1994 ===== Raymond Interactive Theatre, Ltd. ==\\
+//                                                                       \\
+//                                                                       \\
+//=======================================================================\\
+
+#include <config.h>
+#include <std_defs.h>
+
+inherit "/classes/living/human/human";
+inherit "/classes/living/human/npc_cmds";
+
+void
+restart()
+{
+   remove(); // Self-destruct, will be reloaded in start location.
+}
+
+void
+create()
+{
+   human::create();
+   set_human_type(NPC);
+}
+
+void initialize(object where, string who)
+{
+   human::initialize(where, who);
+   set_long("A character named " + query_cap_name() + ".\n");
+   if (NPC_DEBUG) rm(LOG_DIR + query_name() + ".log");
+   init_actions();
+}
+
+void init_actions()
+{
+   human::init_actions();
+   npc_cmds::init_actions();
+   return;
+}

@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Soulsinger"
+long_desc "A player named Soulsinger."
+obj_type 4
+names ({"soulsinger","yourself","Soulsinger",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender "male"
+name "soulsinger"
+human_type 2
+password "CK60x.oa1Vnq2"
+dflt_costume "Soulsinger"
+costume_names ({"Soulsinger",})
+costume_descriptions ({"Soulsinger's blue eyes seem to be looking right through you to something secret.",})
+ticketholder_name "Soulsinger"
+total_usage 74

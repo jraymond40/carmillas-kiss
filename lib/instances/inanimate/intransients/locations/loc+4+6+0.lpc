@@ -1,0 +1,40 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+4+6+0.c                                              \\
+//                                                                       \\
+// Description: Junior's room.                                           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/09/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("Junior's bedroom");
+   set_long (
+      "You've entered what appears to be Juniors bedroom. A stereo sits " + 
+      "upon the bureau, accompanied by two rather large " + 
+      "speakers on each side. A couple posters adorn the walls here " +   
+      "and an unmade bed rests against the northern wall, while a pile " + 
+      "of comics rest upon the floor.");
+
+   set_intransient_list( 
+      ({"bed/full-striped", "bureau/simple", "window/east", "stereo",
+        "picture/The_Crow", "book/comic/Magic", "book/comic/Death",
+        "book/comic/The_Crow"}) );
+
+   set_adjacent_locations(
+      ({ "loc+4+5+0" }),
+      ({ "north" }),
+      ({ "dr+4+5.5+0"}) );
+}

@@ -1,0 +1,76 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    service_bell.c                                           \\
+//                                                                       \\
+// Description: The chrome service bell at the front desk.               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+#include <commons.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+   set_id        ( ({"bell"}) );	// How sicose finds this item.
+   set_short        ("bell");	        // The full description.
+				
+   set_flammability (NONE);		// NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(0);  		// Sec. Burn duration in seconds 
+   set_weight       (1);		// Kg.  (although, it is intransient)
+   set_height       (5);		// cm.    
+   set_width        (5);		// cm.   
+   set_depth        (5);		// cm.   
+   set_form         (SOLID);		// GAS | LIQUID | SOLID
+   set_rigidity     (RIGID);		// RIGID | FLEXIBLE
+   set_dynamacy     (DYNAMIC);          // It can change state.
+}
+
+string
+query_long()
+{
+   if ((int) this_player()->query_role() == VAMPIRE)
+      return ("Peering into it's chrome surface, you see a distorted " +
+              "reflection of the room behind you.");
+   else
+      return ("Peering into it's chrome surface, you see a distorted " +
+              "reflection of yourself.");
+}
+
+string*
+use(object tp, object recipient) 
+{ 
+   if (! valid_action(tp)) return FAIL;
+
+   effect( GLOBAL, tp,
+           "\"ding! ding!\", rings the bell.\n", 
+           "\"ding! ding!\", you hear a small bell.\n");
+
+#ifdef BETAMODE
+   if ((int) find_object(DIRECTOR_OBJ)->query_game_mode() != ON)
+      find_object(DIRECTOR_OBJ)->query_game_mode(START);
+   else
+#endif
+      call_out("reveal_no_help", 10, tp);
+
+   return ({0,0,0,"ring", 0, 0});
+}
+
+reveal_no_help(object ringer)
+{
+   effect(LOCAL, ringer, 
+      "No one seems to have responded to your ringing, the front desk must " +
+      "be closed for the evening.\n");
+   return;
+}

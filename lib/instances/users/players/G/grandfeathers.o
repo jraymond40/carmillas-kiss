@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Grandfeathers"
+long_desc "A player named grandfeathers."
+obj_type 4
+names ({"grandfeathers","yourself","Grandfeathers",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "grandfeathers"
+human_type 2
+password "iot9.YJiq08DM"
+dflt_costume "grandfeathers"
+costume_names ({"grandfeathers",})
+costume_descriptions ({"A player named grandfeathers.",})
+ticketholder_name "grandfeathers"
+total_usage 2

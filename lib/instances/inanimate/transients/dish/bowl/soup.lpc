@@ -1,0 +1,25 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    dish/bowl/soup.c                                         \\
+//                                                                       \\
+// Description: A white and blue china soup bowl.                        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/transients/bowl";
+
+void 
+create()
+{
+   bowl::create();
+
+   set_short("soup bowl");
+   set_long ("Made of a beautiful white and blue china.");
+}

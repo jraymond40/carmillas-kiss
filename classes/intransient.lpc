@@ -1,0 +1,24 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    intransient.c                                            \\
+//                                                                       \\
+// Description: Functions and attributes of intransient classes.         \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/30/93    jmr    Original creation                                  \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\  
+// intitialize()                                                         \\  
+//                                                                       \\  
+//=======================================================================\\
+
+#include <std_defs.h>
+
+
+void create()
+{
+   this_object()->set_transiency(INTRANSIENT);
+   this_object()->set_dynamacy(STATIC); // Just a default.
+}

@@ -1,0 +1,67 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    array.c                                                  \\
+//                                                                       \\
+// Description: Functions to easily add to and remove items from arrays. \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/15/94  jmr  Original                                               \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\
+//                                                                       \\
+//=======================================================================\\
+
+//
+// Add an item to an array, if the item's not already in the array.
+//
+mixed*
+add_to_array(mixed *array, mixed item)
+{
+   if (array)
+   {
+      // If it's not already there, then add it.
+      if (member_array(item, array) == -1)
+      {
+         mixed *tmp;
+         int    i;
+         int    array_size;
+
+         array_size = sizeof(array);
+         tmp = allocate(array_size + 1);
+
+         for (i=0; i < array_size; i++)
+            tmp[i] = array[i];
+
+         tmp[array_size] = item;
+         return tmp;
+      }
+      // It's already in the array, so never mind.
+      else return array;
+   }
+   else return ( ({item}) );
+}
+
+//
+// Remove an item from an array.
+//
+mixed*
+remove_from_array(mixed *array, mixed item)
+{
+   mixed *tmp;
+   int     index, i, j, array_size;
+
+   if (array)
+   {
+      index = member_array(item, array);
+      if (index < 0) return array;
+      array_size = sizeof(array);
+      tmp = allocate(array_size - 1);
+      for (i = 0, j = 0; i < array_size; i++)
+         if (i != index) tmp[j++] = array[i];
+      return tmp;
+   }
+   else return 0;
+}
+

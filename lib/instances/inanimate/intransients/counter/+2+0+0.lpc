@@ -1,0 +1,35 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    counter/+1+0+0.c                                         \\
+//                                                                       \\
+// Description: The counter at the front desk counter.                   \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+// 07/27/94  jmr  Modified for use with the 'counter' class.             \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/counter";
+
+void
+create()
+{
+   counter::create();
+
+   set_long(
+     "The counter is obviously a result of the ongoing remodelling of " +
+     "the chateau by the old couple and their grandson. A service bell "
+     "is apparently bolted to it's top.");
+
+   set_intransient_list( ({"bell-service"}) );
+   set_transient_list( ({"paper/ledger-german", 
+                         "paper/ledger-german", 
+                         "paper/blank"}) );
+}

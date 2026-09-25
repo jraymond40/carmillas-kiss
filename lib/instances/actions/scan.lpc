@@ -1,0 +1,159 @@
+//=======================================================================\\
+//                                                                       \\
+// Filename:    scan.c                                                   \\
+//                                                                       \\
+// Description: Just what it says.                                       \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 06/02/94  jmr  Converted to use w/ Sicose.                            \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+#include <config.h>
+#include <std_defs.h>
+#include <english.h>
+#include <commons.h>
+
+inherit "/classes/living/actions";
+
+//
+// User has selected this cmd and possibly said something,
+// here`s how to respond.
+//
+int
+selected_cmd0(object tp, string said)
+{
+   int    role;
+   object scanner;
+   string scanner_perception;
+
+   scanner = tp;
+
+   if (!valid_action(scanner)) return FAIL;
+
+   if (said != "") say(said);
+
+   role = (int) scanner->query_role();
+
+   if (role == VAMPIRE || role == HUNTER)
+   {
+      int     i, max_last_bitten, pnts;
+      string  str1, str2, str2_test, dir_str;
+      object *player;
+      int    *scanner_coords, *victim_coords, *diff_coords;
+
+      player = users();
+      str1 = "You sense energy available in this area:\n";
+      str2 = "   Other energy sources:            Where:\n";
+      str2_test = str2;
+ 
+      for (i=0; i < sizeof(player); i++)
+         if ( ((int) player[i]->last_bitten() > max_last_bitten) &&
+           ((int) player[i]->query_role() != WITHDRAW) )
+            max_last_bitten = (int) player[i]->last_bitten();
+
+      for (i=0; i < sizeof(player); i++)
+      {
+         if ((int) player[i]->query_role() != WITHDRAW)
+         {
+            object env_scanner, env_victim;
+
+            env_scanner = environment(scanner);
+            env_victim = environment(player[i]);
+
+            // Are they in this room? Then we know who they are.
+            if (env_victim == env_scanner)
+            {
+               str1 = str1 + "       " + 
+               (scanner == player[i] ? "Yourself" : (string) player[i]->query_cap_name()) 
+               + "     " +
+               ( max_last_bitten ? ((int) player[i]->last_bitten() / max_last_bitten) * MAX_BITERS_REWARD
+                                 : MAX_BITERS_REWARD) + "\n";
+            }
+            // Not in the room, but we know they're out there  
+            else
+            {
+
+               scanner_coords = env_scanner->query_coordinates();
+               victim_coords = env_victim->query_coordinates();
+               diff_coords = ( ({0,0,0}) );
+               dir_str = "";
+
+               diff_coords[0] = scanner_coords[0] - victim_coords[0];
+               diff_coords[1] = scanner_coords[1] - victim_coords[1];
+               diff_coords[2] = scanner_coords[2] - victim_coords[2];
+
+               if (diff_coords[1] > 0) dir_str = dir_str + "north ";
+               else if (diff_coords[1] < 0) dir_str = dir_str + "south ";
+               if (diff_coords[0] > 0) dir_str = dir_str + "west ";
+               else if (diff_coords[0] < 0) dir_str =  dir_str + "east ";
+               if (diff_coords[2] > 0) dir_str = dir_str + "down ";
+               else if (diff_coords[2] < 0) dir_str = dir_str + "up ";
+
+               pnts = ( max_last_bitten 
+                  ? ((int) player[i]->last_bitten() / max_last_bitten) * MAX_BITERS_REWARD 
+                  : MAX_BITERS_REWARD);
+
+               str2 = str2 + "       Entity       " + pnts + "       " + dir_str + "\n";
+            }
+         }
+         // Our little 'sonar' ping is noticed by the hunters 
+         if ((int) player[i]->query_role() == HUNTER && (int) player[i]->conscious())
+         {
+            // They're in the same room as we... and it's on our face 
+            if (environment(scanner) == environment(player[i]))
+               effect(INDIV,  player[i],
+                           "You notice an odd look overcomes " + 
+                           (string) scanner->query_cap_name() + "\n" +
+                           ", something utterly primal.\n");
+            else
+               effect(INDIV, player[i],
+                           "A vision overcomes you of a nearby wolf stalking it's prey.\n");
+         }
+      }
+      scanner_perception = str1 + (str2 != str2_test ? str2 : ""); 
+   }
+   else 
+   {
+      scanner_perception = "The elixirs effect is not potent enough, you're unable to sense anything unusual.\n";  
+   }
+
+   effect(INDIV,  scanner, scanner_perception);
+   return SUCCEED;
+}
+
+//
+// When this cmd is selected, should I set up menu1, and if so, how?
+//
+int
+setup_menu1(object tp)
+{
+   // Default action is:
+   // There is no menu1, just update the screen.
+   tp->doupdate();
+   return SUCCEED;
+}
+
+//
+// User has selected this cmd and an option out of menu1,
+// should I setup menu2 and if so, how?
+//
+int
+setup_menu2(object tp, string direct_obj_name)
+{
+   // Default action is:
+   // There is no menu2, just update the screen.
+   tp->doupdate();
+   return SUCCEED;
+}
+
+//
+// Scan area for potential victims
+//
+int
+action_main(string name, string *prefix_strs, int present_tense_form)
+{
+   return selected_cmd0(this_player(), prefix_strs);
+}
+

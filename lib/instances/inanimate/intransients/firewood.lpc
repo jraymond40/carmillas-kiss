@@ -1,0 +1,54 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    firewood.c                                               \\
+//                                                                       \\
+// Description: firewood.                                                \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 09/15/93  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+   set_id        ( ({"firewood"}) );
+   set_short        ("firewood");
+   set_long         ("The firewood appears to be large sections of split ash, or possibly alder.\n");
+   set_flammability (LOW);
+   set_burn_duration(0);
+   set_weight       (INFINITE); /* Rather pointless since it's immoveable */
+   set_height       (50);
+   set_width        (100);
+   set_depth        (50);
+   set_form         (SOLID);
+   set_rigidity     (RIGID);
+}
+
+string*
+use(object tp, object recipient)
+{
+   if (!recipient) return (inanm_intrns::use(tp, recipient));
+   if ((string) recipient->query_short() == "fire" ||
+       ((string) recipient->query_short() == "fireplace" &&             
+                 locally_present("fire")) )
+      return ( ({
+         ", causing the fire to roar and cackle.",
+         ", causing the fire to roar and cackle.",
+         ", causing the fire to roar and cackle.",
+         "toss",
+         "onto",
+         "a piece of"}) );
+
+   else return (inanm_intrns::use(tp, recipient));
+}

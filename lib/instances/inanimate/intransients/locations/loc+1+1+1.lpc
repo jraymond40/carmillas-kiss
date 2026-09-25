@@ -1,0 +1,36 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+1+1+1.c                                              \\
+//                                                                       \\
+// Description: The location template.                                   \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/24/94  jmr  Original creation                                      \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("southeastern gallery");
+   set_long (
+      "The southeastern section of the gallery is filled with "
+      "paintings of all sorts. A few Karnstein portraits line the " +
+      "walls, as does one of Paracelsus. Elaborate gold frames " +
+      "also surround images of hunting and hawking scenes.");
+
+   set_adjacent_locations(({"loc+1+0+1", "loc+2+1+1", "loc+0+1+1"}),
+                          ({"north",     "east",      "west"}),
+                          ({"",          "",          ""}) );
+   set_intransient_list( 
+      ({"picture/Paracelsus"}) );
+}

@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Jraymond"
+long_desc "He's tall, dark haired, and looking rather pale."
+obj_type 4
+names ({"jraymond","yourself","Jraymond",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 1
+closed 1
+closable 1
+volume_contained 2593
+gender "male"
+name "jraymond"
+human_type 2
+password "GQo/C1R1A/gZk"
+dflt_costume "jraymond"
+costume_names ({"jraymond",})
+costume_descriptions ({"A player named jraymond.",})
+ticketholder_name "jraymond"
+total_usage 433715

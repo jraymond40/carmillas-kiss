@@ -1,0 +1,38 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    ropes_+2+0+0.c                                           \\
+//                                                                       \\
+// Description: Busts in the bust gallery.                               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+   set_id        ( ({"ropes"}) );	// How sicose finds this item.
+   set_short        ("ropes");		// The name of this item.
+   // The in-depth description.
+   set_long         (
+      "The red, velvet cushioned ropes are used to prohibit access to the rest of the chateau.");	
+   set_flammability (NONE);		// NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(0);  		// Sec. Burn duration in seconds 
+   set_weight       (10);		// Kg.  (although, it is intransient)
+   set_height       (100);		// cm.    
+   set_width        (3);		// cm.   
+   set_depth        (3);		// cm.   
+   set_form         (SOLID);		// GAS | LIQUID | SOLID
+   set_rigidity     (LIMP);		// RIGID | FLEXIBLE
+}

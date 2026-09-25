@@ -1,0 +1,99 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    stereo.c                                                 \\
+//                                                                       \\
+// Description: The stereo found in Junior's room.                       \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/09/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+#define NUMBER_OF_SONGS 12
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+inherit "/classes/activatable";
+
+void
+create()
+{
+   inanm_intrns::create();
+   set_id        ( ({"stereo"}) );	// How sicose finds this item.
+   set_short        ("stereo");		// The name of this item.
+   set_long ("It's apparently an integrated tuner and amplifier, " + 
+      "labeled `Blaupunkt'.");	
+   set_flammability (NONE);		// NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(0);  		// Sec. Burn duration in seconds 
+   set_weight       (10);		// Kg.  (although, it is intransient)
+   set_height       (20);		// cm.    
+   set_width        (40);		// cm.   
+   set_depth        (40);		// cm.   
+   set_form         (SOLID);		// GAS | LIQUID | SOLID
+   set_rigidity     (RIGID);		// RIGID | FLEXIBLE
+   set_dynamacy     (DYNAMIC);          // Is it usable in some way? 
+}
+
+play(int song_num)
+{
+   string str;
+
+   // Assure the stereo is on.
+   if (query_mode() == ON )
+   {
+      if (song_num > NUMBER_OF_SONGS) song_num = 0;
+      switch(song_num)
+      {
+         // 12 repeated popular songs, this perfectly mimics commercial radio....
+         case 1: str = "`This Corrosion' by Sisters Of Mercy"; break;
+         case 2: str = "`The Ubiquitous Mr. Lovegrove' by Dead Can Dance"; break;
+         case 3: str = "`Lullaby' by The Cure"; break;
+         case 4: str = "`Laura' by Fields Of The Nephilim"; break;
+         case 5: str = "`My Love Paramour' by The Cocteau Twins"; break;
+         case 6: str = "`We Hunger' by Siouxsie And The Banshees"; break;
+         case 7: str = "`Crow' by The Southern Death Cult"; break;
+         case 8: str = "`I Put A Spell On You' by Screamin' Jay Hawkins"; break;
+         case 9: str = "`Avalanche' by Nick Cave And The Bad Seeds"; break;
+         case 10: str = "`Crossroads' by Tom Waits"; break;
+         case 11: str = "`Sanctified' by Nine Inch Nails"; break;
+         default: str = "`Ocean Which Humanity Is' by Sky Cries Mary"; break;
+      }
+      effect(LOCAL, this_object(), "You begin playing " + str + "\n",
+         "The stereo begins playing " + str + ".\n");
+
+      call_out("play", 60 + random(60), ++song_num);
+   }
+}
+
+void
+turn_on()
+{
+   activatable::turn_on();
+   call_out("play", 3, random(NUMBER_OF_SONGS));
+}
+
+void
+turn_off()
+{
+   activatable::turn_off();
+   remove_call_out("play");
+}
+
+string*
+use(object tp, object recipient)
+{
+   if (!recipient) return(activatable::use());
+   else return (inanm_intrns::use(tp, recipient));
+}
+
+init()
+{
+  // If this stereo was last left on, then turn it back on when
+  // someone enters (the stereo makes no sound when there's no one here
+  // to hear it. Saves cpu cycles).
+   if (query_mode() == ON) 
+      call_out("play", random(20), random(NUMBER_OF_SONGS));
+}

@@ -1,0 +1,23 @@
+___________________________________| HELP |_____________________________________
+| To Select: Use the arrow keys to make selections from the menus.             |
+|            - Up and Down arrow, scroll menus and windows up and down.        |
+|            - Right arrow, puts the current selection into the command line.  |
+|            - Left arrow:                                                     |
+|               In the Actions menu, will select the Event window, to allow    |
+|                  back scrolling.                                             |
+|               In other menus, will inactivate that menu, removing the last   |
+|                  selection from the command line.                            |
+|                                                                              |
+| To Redraw: ^R or ^L Will refresh the screen.                                 |
+|                                                                              |
+| To Move:   Note, the Cardinal ^S will freeze some systems (^Q will resume)   |
+|                                                                              |
+|           ROSETTE                                        CARDINAL            |
+|            North                                           North             |
+|             ^T                                              ^N               |
+|              |                   ^U - Up                     |               |
+|     West ^F -+- ^G  East                            West ^W -+- ^E East      |
+|              |                   ^D - Down                   |               |
+|             ^V                                              ^V               |
+|            South                                           South             |
+|________________________[ TO EXIT, Type [SPACE] ^R ]__________________________|

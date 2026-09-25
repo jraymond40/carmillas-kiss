@@ -1,0 +1,25 @@
+/*
+//-----------------------------------------------------------------------\\
+//                                                                       \\  
+//    The following are maintained merely for LPMUd compatability        \\
+//    Since no users will do any actual programming (file I/O) in the    \\ 
+//    RIT system, we don't _really_ need most of 'em.                    \\
+//                                                                       \\  
+//-----------------------------------------------------------------------\\
+*/
+#include "/includes/config.h"
+
+void   log_error(string file, string message)                 { write_file(ERROR_LOG, message); }
+int    valid_seteuid(object ob, string str)                   { return 1; }
+int    valid_write(string file, string eff_user, string func) { return 1; }
+int    valid_read(string file, string eff_user, string func, object obj)  { return 1; }
+int    verify_create_wizard(object ob)                        { return 0; }
+int    save_ed_setup(object who, int code)                    { return 0; }
+int    retrieve_ed_setup(object who)                          { return 0; }
+string get_root_uid()                                         { return "root"; }
+string creator_file(string str)                               { return "root"; }
+string get_bb_uid()                                           { return "backbone"; }
+string get_wiz_name(string file)                              { return 0; }
+string master_create_wizard(string owner, string domain, object caller)   { return 0; }
+object create_map_object(string name) { throw("Map objects not supported.\n"); }
+

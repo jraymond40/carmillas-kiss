@@ -1,0 +1,37 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+4+2+1.c                                              \\
+//                                                                       \\
+// Description: Guest Room #7.                                           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/05/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("Room #7");
+   set_long (
+      "Although small, the room is adequate with a bed along the northern " +
+      "wall and a bureau and chair on the southern wall. A window provides " + 
+      "a spectacular view eastward.");
+
+   set_adjacent_locations(
+      ({ "loc+3+2+1"}),
+      ({ "west"}),
+      ({ "dr+3.5+2+1"}) );
+
+   set_intransient_list( 
+      ({"seat/chair/wooden", "bed/full-flowered", "bureau/guests", 
+        "window/east"}) );
+}

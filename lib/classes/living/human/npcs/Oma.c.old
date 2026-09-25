@@ -1,0 +1,655 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    Oma.c                                                    \\
+//                                                                       \\
+// Description: The matronly worry wart.                                 \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/13/93  jmr  Original                                               \\
+// 06/01/93  jmr  Modified to call exposition cmd's from heart_beat.     \\
+// 05/24/94  jmr  Implemented under Sicose                               \\
+// 07/27/94  jmr  Readied for going online.                              \\
+//                                                                       \\
+//==================== Copyright 1994 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+//                                                                       \\  
+//=======================================================================\\
+#include <config.h>
+#include <std_defs.h>
+#include <npc_defs.h>
+
+// Function prototypes
+public void initialize(object where);
+public void catch_tell(string str);
+
+inherit "/classes/living/human/npcs/npc";
+
+string cue;
+string victim_location;
+string victim_name;
+object victim;
+object Director;
+object Junior;
+object Grandfeathers;
+int    time_of_cue;
+int    active_sequence;
+
+int bites;
+
+public
+void
+create()
+{
+   set_transient_list( ({"rag"}) );
+   npc::create();
+}
+
+public
+void
+initialize(object where)
+{
+   npc::initialize(where, "oma");
+   define_gender("female");
+   set_long(
+      "A spectacled woman whose wiry hair seemingly refuses " +  
+      "to be reigned in by hairpins. Maybe it's just this " +
+      "evening, but her nervousness and small stature can't help " +
+      "but remind one of a mouse.");
+}
+
+public
+void
+catch_tell(string str)
+{
+   string *word;
+
+   /* Log it all during debugging */
+
+   if (NPC_DEBUG) write_file(LOG_DIR + query_cap_name() + ".log", str);
+
+   word = explode(str, " ");
+
+   if (!Junior)        Junior = find_living("junior");
+   if (!Grandfeathers) Grandfeathers = find_living("grandfeathers");
+   if (!Director)      Director = find_object(DIRECTOR_OBJ);
+
+   /* If this is a valid command string, extract all its parts. */
+   if (extract( word[0], 0, 2) == "*>[")
+   {
+      cue = extract( word[0], 3, 4);
+
+      /* Only valid cues can set variables and preempt previous cues */
+      if (cue == "A1" || cue == "A3" || cue == "A6" || cue == "A8" || cue == "A9" ||
+          cue == "B0" || cue == "B2" || cue == "B4" ||
+          cue == "C1" || cue == "C3" || cue == "C5" || cue == "C7" || cue == "C9" ||
+          cue == "D0" || cue == "D2" || cue == "D4" || cue == "D7" || cue == "D9" || cue == "DB" ||
+          cue == "Z0" || cue == "Z1" || cue == "Z2" || cue == "Z3" )
+      {
+         /* Preempt previous call-outs, stopping what ever activities had been planned */
+         do{} while(remove_call_out("command") != -1);
+         time_of_cue = 0;
+
+         /* First cue sets all the important variables */   
+         if (cue == "A1" || cue == "B0")
+         {
+            victim_name = lower_case(extract(word[1], 1));
+
+            if (NPC_DEBUG) write_file(LOG_DIR + query_cap_name() + ".log", 
+               "Now I'm looking for [" + victim_name + "]\n");
+            victim = find_living(victim_name); 
+            if (!victim) 
+            {
+               command("expressions: yell *>[say] Cut... I can't seem to find zhe victim, " + victim_name + ".");
+               if (NPC_DEBUG) write_file(LOG_DIR + query_cap_name() + ".log", 
+                  "I can't seem to find zhe victim, [" + victim_name + "]\n");
+               command("cue oma Z9");
+               return;
+            }
+            victim_location = LOCATION_NUMBER(environment(victim));
+         }
+
+         /* Do this cue at the next heartbeat */
+         set_heart_beat(ON);
+      }
+      /* In the event of an error */
+      else if (cue == "Z9")
+      {
+         /* Stop whatever we had planned to do next */ 
+         do{} while(remove_call_out("command") != -1);
+         set_heart_beat(OFF);
+         command("expressions: yell *>[say] Help! I can't perform my role - I'm confused!");
+      }
+      
+      else 
+      {
+         command("expressions: yell *>[say] I don't know zhe cue: " + cue + ".");
+      }
+
+   }
+   /* Other event capturing */ 
+   else 
+   {
+   }
+
+   return;
+}     
+
+
+heart_beat(string str)
+{
+   int time_now;
+   int rndm;
+   int i;
+   object *player;
+   object yli_flask;
+
+   time_now = time();
+
+   if (cue == "A1")
+   {
+
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 0;
+         /* Action! */
+         command("*>[say] Vhat vas zhat?");
+         command("moveto " + victim_location); 
+         command("cutto " + victim_location);
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 1) ) 
+      {
+         command("*>[say] Ohh mein goodness, vhat has happened here?!");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.6) && (active_sequence == 2) ) 
+      {
+         command("look " + victim->query_user_name());
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.6) && (active_sequence == 3) ) 
+      {
+         command("expressions: gasp *>[say] Valpurgisnacht!");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 4) ) 
+      { 
+
+         command("expressions: yell *>[say] Junior, come quick!");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+
+         /* cue the next action */
+         command("cue junior A2"); 
+      }
+   }
+   else if (cue == "A3")
+   {
+      /* Cue Junior only when he is here. */
+      if (LOCATION_NUMBER(environment(Junior)) == victim_location)
+      {
+         command("*>[say] Zhere you are... Run, get Grandfeazhers, and make certain zhose doors are bolted!"); 
+         cue = "";
+         set_heart_beat(OFF);
+         command("cue junior A4");
+      }
+      else 
+      {
+         // command("cue junior A2");
+         rndm = random(41);
+
+         switch(rndm)
+         {
+             case 10: command("expressions: yell *>[say] Junior..."); break;
+             case 20: command("expressions: shout *>[say] Junior, vhere are you?"); break;
+             case 30: command("expressions: yell *>[say] Junior!"); break;
+             case 40: command("expressions: scream *>[say] Junior."); break;
+         }
+      }
+   }
+   else if (cue == "A6")
+   {
+      /* Cue Grandfeathers only when he is here. */
+      if (environment(Grandfeathers) == environment(this_player()) )
+      {
+         command("*>[say] Grandfeazhers, look at " + victim->query_possessive() + 
+              " neck! I tell you, zhis is zhe verk of vitches and beasts!"); 
+         cue = "";
+         set_heart_beat(OFF);
+         command("cue grandfeathers A7");
+      }
+   }
+   else if (cue == "A8")
+   {
+
+//    command("shake_head");
+
+      command("use cloth " + victim->query_cap_name());
+      command("*>[say] Vell, despite your paleness and zhose spots on your neck, " +
+              "you look as zhough you'll be fine.");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue junior AA");
+   }
+   else if (cue == "A9")
+   {
+
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 0;
+
+         /* Action! */
+         active_sequence++;
+      }
+      else if (active_sequence == 1)  
+      {
+          /* Perform these actions only if Grandfeathers is gone and Junior is here. */
+         if ((LOCATION_NUMBER(environment(Grandfeathers)) != victim_location) &&
+             (LOCATION_NUMBER(environment(Junior)) == victim_location) )
+         {
+            time_of_cue = time_now;
+            active_sequence++;
+         }
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME) && (active_sequence == 2) ) 
+      {
+         command("expressions: mutter *>[say] A superstitious old fool I may be, but zhis I'm certain of."); 
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 3) ) 
+      {
+         command("*>[say] Junior, vill you escort our guest to " + victim->query_possessive() + 
+                 " room vhere " + victim->query_pronoun() + " may rest.");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 4) ) 
+      {
+         command("expressions: mumble *>[say] Now vhere did Grandfeazhers go to?");
+         if (victim_location != "+2+0+0") command("moveto +2+0+0");
+         else command("moveto +1+0+0");
+
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 5) ) 
+      {
+         command("end_cutto");
+ 
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+
+      }
+   }
+   else if (cue == "B0")
+   {
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 0;
+
+         /* Action! */
+         command("cutto " + victim_location);
+         command("moveto " + victim_location); 
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 1) ) 
+      {
+         command("*>[say] Oh dear, not again...");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 2) ) 
+      {
+         command("look " + victim->query_cap_name());
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 3) ) 
+      {
+         command("expressions: yell *>[say] Grandfeazhers! Junior!");
+         command("cue Junior B1");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME) && (active_sequence == 4) ) 
+      {
+         command("use clothe " + victim->query_cap_name());
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+      }
+   }
+   else if (cue == "B2")
+   {
+      command("*>[say] Vhere is zhat deaf grandfazher of yours?");
+      command("cue junior B3");
+      cue = "";
+      set_heart_beat(OFF);
+   }
+
+   else if (cue == "B4")
+   {
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 0;
+
+         /* Action! */
+         command("moveto " + victim_location); 
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 1) 
+                && (victim->conscious()) )
+      {
+         command("*>[say] Vell don't you vorry yourself... ve're getting to zhe bottom of zhis.");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME) && (active_sequence == 2) )
+      {
+         command("*>[say] Junior, please help " + victim->query_cap_name() + 
+                 " to " + victim->query_possessive() + " room.");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4) && (active_sequence == 3) )
+      {
+         command("expressions: mumble *>[say] Studying? zhis is no time for crossvord puzzles...");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if ((time_now >= time_of_cue + MIN_RESPONSE_TIME) && (active_sequence == 4) )
+      {
+         if (victim_location != "+1+0+0") command("moveto +1+0+0");
+         else command("moveto +0+1+1");
+         command("end_cutto");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+      }
+   }
+   else if (cue == "C1")
+   {
+      command("cutto " + LOCATION_NUMBER(environment(Grandfeathers)));
+      command("moveto " + LOCATION_NUMBER(environment(Grandfeathers)));
+      command("*>[say] Zhere you are, I've been looking all over for you! Ve have a real problem!");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue Grandfeathers C2");
+   }
+   else if (cue == "C3")
+   {
+      command("*>[say] Not now you old fool... vhat are vee going to do for our guests?");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue Grandfeathers C4");
+   }
+   else if (cue == "C5")
+   {
+      command("expressions: gasp *>[say] Vampires... get back to zhe vampire part...");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue Grandfeathers C6");
+   }
+   else if (cue == "C7")
+   {
+      command("*>[say] To stop it vee must drink blood?! Vell, I simply refuse!");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue Grandfeathers C8");
+   }
+   else if (cue == "C9")
+   {
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+
+      } 
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 1)
+      {  
+         command("*>[say] Inhale from zhose strange bottles Junior found?? Vell I've never heard " +
+                 "of such a zhing... besides, vee gave all zhose to our guests. I vill go dig " +
+                 "up some garlic out of zhe kitchen, zhat should take care of zhings!");
+         command("cue Grandfeathers CA");
+         active_sequence++;
+         time_of_cue = time_now;   
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 2)
+      {  
+         command("*>[say] Shhh..pretend zhat I vent to zhe kitchen (it doesn't exist yet).");
+
+         command("end_cutto");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+      }
+   }
+
+   else if (cue == "D0")
+   {
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+
+      } 
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 1)
+      {  
+         command("moveto +2+0+0");
+         command("*>[say] All ready are you zhen? Say, if you're hungry after zhat long trip, I'll have some soup " +
+                 "ready for you shortly. Afterall, you'll need all zhe protein you can " +
+                 "get for zhat race of yours tomorrow.");
+         time_of_cue = time_now;
+         active_sequence++;
+      } 
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 2)
+      {  
+         command("*>[say] You know, I've done some cross country skiing in my days, " + 
+                 "and I vasn't  half bad, if I might say.");
+
+         effect(LOCAL, this_object(),
+            "You reach over and remove the ropes.\n",
+            "Oma reaches over and removes the velveteen ropes.\n");
+
+         environment(this_object())->add_exits();
+
+         command("cue junior D1");
+
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+      }
+   }
+   else if (cue == "D2")
+   {
+      command("*>[say] Junior, you stay out of zhat cellar, you hear me? You can " +
+              "get back to remodelling after zhis evening. Besides, I'm going " +
+              "to need your help."); 
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue junior D3");
+   }
+   else if (cue == "D4")
+   {
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+
+      } 
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 1)
+      {  
+         command("*>[say] Oh say, vhat is dis?");
+         command("use cloth case"); 
+         command("*>[say] Dis vun says somezing... vhats zhat say Junior? My glasses " +
+                 "aren't verking too vell today.");
+         command("cue junior D5");
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+      }
+   }
+   else if (cue == "D7")
+   {
+      command("expressions: laugh *>[say] Vhew... zhat's some vine! In fact zhat's just vhat I'd " +
+              "need to vin zhat race of yours tomorrow.");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue Grandfeathers D8");
+   }
+   else if (cue == "D9")
+   {
+      command("expressions: glare Grandfeathers");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue Junior DA");
+   }
+   else if (cue == "DB")
+   {
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+
+      } 
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 1)
+      {  
+         command("*>[say] Vell, here's a souvenir presented to zhe special skiers " +
+                 "vee have vizh us zhis evening. May it bring you good fortune " +
+                 "tomorrow!");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 2)
+      {
+         /* A bit of a cheat here... give everyone a flask */
+         player = users();
+         for (i = 0; i < sizeof(player); i++)
+         {
+            if (! locally_present("flask", player[i]))
+            {
+               yli_flask = clone_object(FLASK_YLIASTRUM);
+               yli_flask->initialize(player[i]);
+            }
+         } 
+         effect(LOCAL, this_player(),
+                "You reach into the case and hand everyone a flask.\n",
+                "Oma reaches into the case and hands everyone a flask.\n");
+
+         Director->set_game_mode(START);
+
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 3)
+      {  
+         command("*>[say] Now Junior, if you'll show our guests to zheir rooms, I'm sure " +
+                 "zheir anxious to be settled after such a long trip. And I, shall go " +
+                 "attend to zhat soup.");
+         time_of_cue = time_now;
+         active_sequence++;
+         command("cue junior DC");
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 4)
+      {  
+         command("*>[say] Shhh... pretend I vent into zhe kitchen, since it's not built yet.");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         active_sequence = 0;
+         set_heart_beat(OFF);
+      }
+   }
+
+
+   /* The section here is reserved for default actions. */
+   else if (cue == "Z0")
+   {
+      moveto("+2+1+1");
+      command("use cloth portrait");
+      call_out("command", KEEPING_BUSY_RATE, ({"use cloth portrait"}) );
+      cue = "";
+      set_heart_beat(OFF);
+      call_out("command", KEEPING_BUSY_RATE * 2, ({ "cue oma Z" + random(4)}) );
+   }
+   else if (cue == "Z1")
+   {
+      moveto("+4+1+1");
+      command("use cloth nightstand");        
+      call_out("command", KEEPING_BUSY_RATE, ({"use cloth bed"}) );
+      cue = "";
+      set_heart_beat(OFF);
+      call_out("command", KEEPING_BUSY_RATE * 1.5, ({ "cue oma Z" + random(4)}) );
+   }
+   else if (cue == "Z2")
+   {
+      moveto("+1+0+0");
+      command("use cloth counter");
+      call_out("command", KEEPING_BUSY_RATE, ({"use cloth bell"}) );
+      cue = "";
+      set_heart_beat(OFF);
+      call_out("command", KEEPING_BUSY_RATE * 3, ({ "cue oma Z" + random(4)}) );
+   }
+   else if (cue == "Z3")
+   {
+      command("expressions: sneeze");
+      cue = "";
+      set_heart_beat(OFF);
+      call_out("command", KEEPING_BUSY_RATE, ({ "cue oma Z" + random(4)}) );
+   }
+   else 
+   {
+      command("expressions: yell *>[say] Heartbeat has no instructions for zhe cue: " + cue + ".");
+      cue = "";
+      set_heart_beat(OFF);
+   }
+   
+   return SUCCEED;
+}     
+
+bite_occured(string victim)    
+{ 
+   if (++bites == 1) tell_object(find_living("oma"),"*>[A1] \n" + capitalize(victim));
+   else if (bites == 2) tell_object(find_living("oma"),"*>[B0] \n" +  capitalize(victim));
+   else if (bites == 4) call_out("policing_exposition", 20);
+   return;
+}

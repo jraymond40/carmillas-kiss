@@ -1,0 +1,60 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    vampire.c                                                \\
+//                                                                       \\
+// Description: Functions for all vampire specific actions & perceptions.\\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/08/93  jmr  Created                                                \\
+// 08/23/94  jmr  Added restart()                                        \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+//  bite()                     What happens when we bite.                \\
+//  scan()                     Scan for the freshest bite.               \\
+//                                                                       \\
+//=======================================================================\\
+
+#include <std_defs.h>
+#include <commons.h>
+#include <config.h>
+
+private nosave float vamp_level;          // What level vampire are we?
+private nosave int   bite_enabled = TRUE; // For bite satiating
+
+int    query_bite_enabled()            { return bite_enabled; }
+void   set_bite_enabled(int setting)   { bite_enabled = setting; }
+float  query_vamp_level()              { return vamp_level; }
+
+void
+restart()
+{
+   vamp_level = 0;
+}
+
+void 
+inc_vamp_level()     
+{ 
+   vamp_level++; 
+   set_heart_beat(ON); 
+}
+
+void 
+init_actions1()
+{
+   add_action("action_handler", "bite");
+   add_action("action_handler", "scan");
+   this_player()->actions_update();
+}
+
+check()
+{
+   if (vamp_level == 2)
+   {
+      effect(INDIV, this_player(), "An odd sensation overcomes you... you have new abilities.\n");
+      init_actions1();
+      vamp_level++;
+   }
+   else set_heart_beat(OFF);
+}

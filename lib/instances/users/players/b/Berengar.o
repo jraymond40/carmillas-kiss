@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Berengar"
+long_desc "A player named Berengar."
+obj_type 4
+names ({"berengar","yourself","Berengar",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 30
+closed 1
+closable 1
+volume_contained 18664
+gender ""
+name "berengar"
+human_type 2
+password "CoxqpEN3yBd0k"
+dflt_costume "Berengar"
+costume_names ({"Berengar",})
+costume_descriptions ({"A player named Berengar.",})
+ticketholder_name "Berengar"
+total_usage 14867

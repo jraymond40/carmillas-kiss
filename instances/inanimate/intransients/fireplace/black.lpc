@@ -1,0 +1,27 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    fireplace/black.c                                        \\
+//                                                                       \\
+// Description: The dining halls marble fireplace.                       \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/10/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/fireplace";
+
+void
+create()
+{
+   fireplace::create();
+
+   set_long ("Perfectly flawless, and highly polished black marble " + 
+      "composes the fireplace. Through the brass logholder you can " + 
+      "see the fireplace is actually two-sided and opens to the " + 
+      "ballroom.");
+}

@@ -1,0 +1,25 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    seat/bench/rough.c                                       \\
+//                                                                       \\
+// Description: The splintery bench.                                     \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/bench";
+
+void
+create()
+{
+   bench::create();
+
+   set_short        ("rough wooden bench");
+   set_long         ("Well used, the bench appears somewhat splintered.");
+}

@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Eli"
+long_desc "A player named Eli."
+obj_type 4
+names ({"eli","yourself","Eli",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "eli"
+human_type 2
+password "D/02JefEIT2JI"
+dflt_costume "Eli"
+costume_names ({"Eli",})
+costume_descriptions ({"A player named Eli.",})
+ticketholder_name "Eli"
+total_usage 647

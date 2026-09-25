@@ -1,0 +1,25 @@
+#classes/living/human/users/players/player.c
+short_desc "Davidy"
+long_desc "A player named Davidy."
+obj_type 4
+names ({"davidy","yourself","Davidy",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+volume_contained 1
+gender ""
+name "davidy"
+human_type 2
+password "yTkgX7Qdd8atQ"
+dflt_costume "Davidy"
+costume_names ({"Davidy",})
+costume_descriptions ({"A player named Davidy.",})
+ticketholder_name "Davidy"
+total_usage 884

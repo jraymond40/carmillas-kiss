@@ -1,0 +1,62 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    cue.c                                                    \\
+//                                                                       \\
+// Description: For cueing NPC's.                                        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 09/06/93  jmr  Original                                               \\
+// 05/06/94  jmr  Made into a seperate function.                         \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+//   cue - to cue an NPC into action "cue Oma Z9"                        \\
+//                                                                       \\
+//=======================================================================\\
+*/ 
+
+#include <std_defs.h>
+#include <config.h>
+
+
+int cue(string str)
+{
+   string *word;
+   string name;
+   string cue;
+   string extra_data;
+   object npc;
+
+   int ii;
+
+   if (str == "") return FAIL;
+   else 
+   {
+      word = explode( str, " ");
+      extra_data = "";
+
+      if (sizeof(word) < 2) return FAIL;
+      else 
+      {
+         name = lower_case(word[0]);
+         cue  = capitalize(word[1]);
+
+         for (ii = 2; ii < sizeof(word); ii++)
+         {
+            if (word[ii] != "") extra_data = extra_data + word[ii];
+         }
+         if ( (npc = find_living(name)) == 0) 
+         {
+            notify_fail("Attempted to find " + name + " but got " + npc->query_name() + ".\n");
+            return FAIL;
+         }
+         else
+         {
+            tell_object( npc, "*>[" + cue + "] \n" + extra_data);
+            return SUCCEED;
+         }
+      }
+   }
+}

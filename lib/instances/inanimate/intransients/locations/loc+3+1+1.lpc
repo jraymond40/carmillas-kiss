@@ -1,0 +1,37 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+1+1.c                                              \\
+//                                                                       \\
+// Description: The location template.                                   \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/24/94  jmr  Original creation                                      \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("master suite entry way");
+   set_long (
+      "You stand in the entry way to the master suite. A canopied " +
+      "bed, fit for royalty, fills the room. The air here is rather " +
+      "stale, and the dust is thick. It is obvious that this once was " +
+      "a beautiful room.");
+
+   set_adjacent_locations(({"loc+3+0+1", "loc+2+1+1"}),
+                          ({"north",     "west" }),
+                          ({ "",          ""}) );
+
+   set_intransient_list( 
+      ({"bed/master", "floor/dusty"}) );
+}

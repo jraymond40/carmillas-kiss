@@ -1,0 +1,36 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+2+1+0.c                                              \\
+//                                                                       \\
+// Description: The south foyer.                                         \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/25/94  jmr  Original creation                                      \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("south foyer");
+   set_long (
+      "To the north lies the main foyer, while a pair of beautifully " + 
+      "ornate white and goldleaf doors along the southern wall beg your " + 
+      "entry into the ballroom. A waiting area is west from here, and " + 
+      "east of here lies the study. ");
+
+   set_adjacent_locations(({ "loc+2+0+0", "loc+2+2+0", "loc+3+1+0", "loc+1+1+0"}),
+                          ({ "north",     "south",     "east",      "west" }),
+                          ({ "",          "dr+2+1.5+0","",          ""}) );
+
+//   set_transient_list ( ({"holy_water", "wolfs-bane", "star_of_David"}) );
+}

@@ -1,0 +1,78 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    html_user.c                                              \\
+//                                                                       \\
+// Description: Functions common to all users.                           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/21/93  jmr  Original                                               \\
+// 08/28/93  jmr  Modified to inherit the attributes of "living".        \\
+// 08/15/94  jmr  Readied for going online.                              \\
+// 08/23/94  jmr  Added restart()                                        \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+#include <config.h>
+#include <std_defs.h>
+
+inherit "/classes/living/human/human";
+inherit "/classes/living/human/users/html_ui";
+
+private nosave int time_of_login;
+
+void
+restart()
+{
+   human::restart();
+   ui::restart();
+}
+
+void
+initialize(object where, string who)
+{
+   time_of_login = time();
+   human::initialize(where, who);
+}
+
+void
+init_actions()
+{
+   add_action("action_handler", "quit");
+   human::init_actions();
+}
+
+void 
+move(object dstloc, string dir) 
+{
+   string result;
+   object curloc;
+
+   curloc = environment(this_object());
+   human::move(dstloc, dir);
+
+   // Scroll only if we've moved.
+   if (curloc != environment(this_object()) )
+      scroll_map(curloc, dstloc);
+
+   return;
+}
+
+void 
+net_dead()
+{
+   command("quit Yes, quit.");
+// Use this spot if we want to save stuff if someone's
+// gone net dead w/out quitting.
+   return;
+}
+
+void
+quit()
+{
+   ui::quit();
+   effect(LOCAL, this_player(), 
+      "You walk off the set, and exit the theatre.\n",
+       query_cap_name() + " walks off the set, and exits the theatre.\n");
+   remove();
+}

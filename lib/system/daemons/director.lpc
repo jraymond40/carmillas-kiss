@@ -1,0 +1,412 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    director.c                                               \\
+//                                                                       \\
+// Description: The director, directs events.                            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/21/93  jmr  Created                                                \\
+// 03/22/93  jmr  Added NPC navigation                                   \\
+// 05/22/93  jmr  Added action cueing to NPC's                           \\
+// 09/01/93  jmr  Modified to work w/ "locations"                        \\
+// 09/22/93  jmr  Seperated from master.                                 \\
+// 09/24/94  jmr  Seperated out Commons mgr functions.                   \\
+// 09/24/94  jmr  Readied for going online.                              \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\
+//                                                                       \\
+//=======================================================================\\
+
+#include <timing.h>
+#include <localtime.h>
+#include <config.h>
+#include <std_defs.h>
+
+//#define DIRECTOR_DEBUG
+
+// Function prototypes
+void set_game_mode(int x);
+void end_game(int x);
+void event_manager(int x);
+void reset_stage();
+void curtain(mixed *x);
+
+int mode;                  // Game mode
+int bites;                 // The number of successful bites so far...
+int time_game_started;     // The (corrected) time at the start of the game
+int frozen_game_clock;     // Time elapsed on the game clock
+int pristine_stage = TRUE; // The stage hasn't been used before, 
+                           //   users are at the front desk.
+int accepting_players;     // Are we currently accepting players onto the stage?
+mixed *callouts;           // The list of callouts upon game freeze.
+
+int  query_accepting_players()  { return accepting_players; }
+int  query_game_mode()          { return mode; }
+
+// Just the delta t since game begun.
+int  gametime()                 { return (time() - time_game_started); } 
+
+
+private 
+void 
+set_accepting_players(int mode) 
+{
+   accepting_players = mode;
+}
+
+public
+int  
+seconds_until_the_hour()   
+{
+   int *lt;
+   lt = localtime(time());
+   return ( (lt[LT_SEC] - 60) + (60 * (60 - lt[LT_MIN])) ); 
+}
+
+public
+int
+seconds_until_showtime()
+{
+   int    i;
+   object this_obj;
+   mixed *all_callouts;
+
+   this_obj = this_object();
+
+   // Find the open_show() call out, and return the delay to go.
+   all_callouts = call_out_info();
+   for (i = 0; i < sizeof(all_callouts); i++)
+      if ((object) all_callouts[i][0] == this_obj &&
+          (string) all_callouts[i][1] == "open_show")
+         return all_callouts[i][2];
+   return 0;
+}
+
+public
+void
+create()
+{
+   int secs_to_begin;
+
+   secs_to_begin = seconds_until_the_hour();
+
+   // Open the curtain upon the hour, after the systems come up.
+   call_out("open_show", secs_to_begin );
+   accepting_players = TRUE;
+   // Allow entrance 8 minutes before the first show.
+//   call_out("set_accepting_players", secs_to_begin - (8 * 60), TRUE);
+   // Set the game clock as if a game had been going on, so logon can reference
+//   time_game_started = ((time() + secs_to_begin) - (8*60)) - GAME_LENGTH;
+}
+
+void 
+set_game_mode(int setting) 
+{ 
+   object this_obj;
+   int i;
+   this_obj = this_object();
+
+   if (mode != setting) // Change modes, only if different then current. 
+   {
+      if (setting == START)     // turn off, reset, and start game.
+      {
+         // If game was already running, turn off and reset first.
+         if (mode == ON) set_game_mode(OFF); 
+
+         // Start the game
+         time_game_started = time();
+         frozen_game_clock = 0;
+         mode = ON;
+         event_manager(0);
+      }
+      else if (setting == OFF || setting == PAUSE)  // Stop the action 
+      {
+         // Remember and remove all call outs.
+         callouts = call_out_info();
+         for (i = 0; i < sizeof(callouts); i++)
+            if ((object) callouts[i][0] == this_obj)
+               remove_call_out((string) callouts[i][1]);
+
+         frozen_game_clock = time() - time_game_started;
+
+         if (setting == OFF) reset_stage();        // Off? then reset things.
+      }
+      else if (setting == ON)                      // Resume game where it was.
+      {
+         // Reset the game start time to eliminate the time
+         // that passed during the pause.
+         time_game_started = time() - frozen_game_clock;
+
+         // Restore all the call outs.
+         for (i = 0; i < sizeof(callouts); i++)
+            if ((object) callouts[i][0] == this_obj)
+               call_out((string) callouts[i][1], (int) callouts[i][2], (mixed) callouts[i][3]);
+      }
+      mode = setting;
+   }
+   return;
+}
+
+void
+turn_billing(int mode)
+{
+   int     i;
+   object *p;
+
+   p = players();
+   for(i = 0; i < sizeof(p); i++) p[i]->billing(mode);
+}
+
+public
+void
+open_show()
+{ 
+   int     i, cnt;
+   object *p;
+
+   p = users();
+
+   for (i = cnt = 0; i < sizeof(p); i++) 
+      if ((int) (p[i]->query_human_type()) == PLAYER || 
+          (int) (p[i]->query_human_type()) == ADMINISTRATOR ) cnt++;
+   
+   if (cnt < MIN_REQUIRED_PLAYERS)
+   {
+      accepting_players = TRUE;
+      turn_billing(OFF);
+
+      effect(GLOBAL, 0, "",
+         "\n   \"CUT!\", yells the director from backstage. \n" +
+         "\n   \"It appears that due to a lack of participants and a lack of " +
+         "extras, this show has been canceled. Tickets for this show can be " + 
+         "used at any upcoming show, including the next show an hour from " + 
+         "now,\" the director says, hanging his berret upon the back of " + 
+         "his chair. Nodding to the cast, he turns and walks off the set.\n");
+
+      // Assure we open just past the hour, so the following call is 
+      // past the next hour.
+      call_out("open_show", seconds_until_the_hour() + 3);
+   }
+   else
+   { 
+      accepting_players = FALSE;
+      turn_billing(ON);
+      set_game_mode(START);
+   }
+}
+
+void
+close_show()
+{
+   turn_billing(OFF);
+   set_game_mode(OFF);
+   accepting_players = TRUE;
+   call_out("open_show", seconds_until_the_hour() ); // Open the curtain again on the hour.
+}
+
+void
+broadcat(string filename) // A combination of 'broadcast' and the unix command 'cat'
+{
+   string str;
+   str = read_file(filename);
+   effect(GLOBAL, 0, "", str);
+}
+
+void
+set_between_acts(int setting)
+{  // Call out doesn't seem to call from libraries, so this work around.
+   between_acts(setting);
+}
+
+#define CURTAIN_DURATION   6
+#define SCORE_DURATION     14
+#define QUOTE_DURATION     6
+#define SCORE_OFFSET       CURTAIN_DURATION
+#define BROADCAT_OFFSET    SCORE_OFFSET + SCORE_DURATION
+#define CURTAIN_OFFSET     BROADCAT_OFFSET + CURTAIN_DURATION
+#define BETWEENACTS_OFFSET CURTAIN_OFFSET + 1
+
+void 
+end_act(int act_num)
+{
+   between_acts(TRUE);
+   switch(act_num)
+   {
+      case 0:
+         broadcat(INFO_DIR + "Act1_quote");
+         call_out("curtain", QUOTE_DURATION, ({"Begin", " Act I "}));
+         call_out("set_between_acts", QUOTE_DURATION + 1, FALSE);
+         break;
+
+      case 1: 
+         curtain( ({" End ", " Act I "}) );
+         call_out("show_scores", SCORE_OFFSET);
+         call_out("broadcat", BROADCAT_OFFSET, INFO_DIR + "Act2_quote");
+         call_out("curtain", CURTAIN_OFFSET, ({"Begin", "Act  II"}));
+         call_out("set_between_acts", BETWEENACTS_OFFSET, FALSE);
+         break;
+
+      case 2:
+         curtain( ({" End ", "Act  II"}) );
+         call_out("show_scores", SCORE_OFFSET);
+         call_out("broadcat", BROADCAT_OFFSET, INFO_DIR + "Act3_quote");
+         call_out("curtain", CURTAIN_OFFSET, ({"Begin", "Act III"}) );
+         call_out("set_between_acts", BETWEENACTS_OFFSET, FALSE);
+         break;
+
+      case 3:
+         curtain( ({" End ", "Act III"}) );
+         call_out("show_scores", SCORE_OFFSET);
+         call_out("broadcat", BROADCAT_OFFSET, INFO_DIR + "Act4_quote");
+         call_out("curtain", CURTAIN_OFFSET, ({"Begin", "Act  IV"}) );
+         call_out("set_between_acts", BETWEENACTS_OFFSET, FALSE);
+         break;
+
+      case 4:
+         curtain( ({" THE ", "  END  "}) );
+         call_out("show_scores", SCORE_OFFSET);
+         call_out("broadcat", BROADCAT_OFFSET, INFO_DIR + "Credits");
+         call_out("set_between_acts", BROADCAT_OFFSET + 1, FALSE);
+         break;
+   }
+   return;
+}
+
+//
+// Coordinate the dramatic events here.
+//
+void 
+event_manager(int event)
+{
+   int delay;
+
+   //
+   // Order of Events.
+   //
+   switch(event)
+   {
+      case 0: end_act(0); delay = QUOTE_DURATION + CURTAIN_DURATION; break;
+      case 1: tell_object(find_living("oma"), "*>[D0] \n"); delay = GAME_LENGTH * 0.25; break;
+      case 2: end_act(1); delay = GAME_LENGTH * 0.25; break;
+      case 3: end_act(2); delay = GAME_LENGTH * 0.25; break;
+      case 4: end_act(3); delay = GAME_LENGTH * 0.25; break;
+      case 5: end_act(4); delay = BROADCAT_OFFSET + 2; break;
+      case 6: close_show(); return; break;
+   }
+
+   call_out("event_manager", delay, ++event);
+}
+
+void
+reset_stage()
+{
+   // Prepare the stage for restarting the game.
+   // This moves everyone to the front desk, puts props back, cleans up the stage
+   // (removes delta_adjectives), etc.)
+
+   // Only do this _after_ the first run.
+
+   if (pristine_stage) pristine_stage == FALSE;
+   else
+   {
+      int i;
+      object *all_objs;
+      object *who;
+      object starting_loc;
+
+      // Restart the starting location first.
+      starting_loc = find_object(STARTING_LOCATION);
+      starting_loc->restart();
+
+      // Now, move all the players there.
+      who = players();
+      for (i = 0; i < sizeof(who); i++)
+         who[i]->move(starting_loc);
+    
+      // Now reset the rest of the objects to their starting state.
+      all_objs = objects(); // All loaded objects, regardless of location.
+      for (i = 0; i < sizeof(all_objs); i++)
+         if (all_objs[i] != starting_loc) all_objs[i]->restart();
+   }
+}
+
+int query_bites()     { return bites; }
+
+void
+bite_occurred(object victim)   
+{ 
+   switch (bites++)
+   {
+      case 1:
+         cue("oma A1 " + (string) victim->query_primary_id());
+         break;
+      case 2:
+         victim->command("expressions: scream");
+         cue("oma B0 " + (string) victim->query_primary_id());
+         break;
+      case 4:
+         call_out("policing_exposition", 20);
+         break;
+   }
+}
+
+void 
+policing_exposition()
+{
+   cue("grandfeathers C0");
+   return; 
+}
+
+//
+// Get rid of this...
+///
+string
+query_entrance_txt()
+{
+   return (
+      "You find yourself at the chateaus front desk. " +
+      "Behind the counter, a spectacled old woman greets you in a heavy accent. \n" +
+      "   \"Velcome! Velcome, to Karnstein Chateau. Vell, " + 
+      "such distinvished guests, and on such a dreadful evening.\" says Oma.\n" + 
+      "   \"Vhile ve avait zhe rest of your party, I shall prepare zhe kitchen. " + 
+      "You ring zhe bell, vhen zhey have arrived, ya?\", the old woman directs you, " +
+      "as she smiles briefly, then scurries away.");
+}
+
+
+void 
+curtain(mixed sign)
+{
+   effect(GLOBAL, 0,"",
+      "\n" +
+      "=======================================================================\n" +
+      "|| | | || || || | | || | | | | || || || || || ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | | | | || || || || || ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | | | | || || || || || ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | | | | || || || || || ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | |------------------- ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | ||      "+ (string) sign[0] +"      | ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | ||                 | ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | ||     "+ (string) sign[1] +"     | ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | |------------------- ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | | | | || || || || || ||| || ||| | | | | | | ||\n" +
+      "|| | | || || || | | || | | | | || || || || || ||| || ||| | | | | | | ||\n" +
+      "\\|_|/-\\||_|/--\\_/\\|_||/--\\_|/-\\||/-\\_|/-/\\_||/-\\|_/\\_|/|/-\\|_/-\\_/\\/-\\/\n");
+}
+
+void
+show_scores()
+{
+   int i;
+   string results;
+   object *player;
+
+   results = "Player Scores:\n";
+   player = players();
+   for (i=0; i < sizeof(player); i++)
+      results = results + player[i]->query_cap_name() + ":   " + player[i]->query_energy() + "\n";
+         
+   effect(GLOBAL, 0, "",  results); 
+}

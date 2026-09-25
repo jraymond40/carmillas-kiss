@@ -1,0 +1,51 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    sink.c                                                   \\
+//                                                                       \\
+// Description: The kitchen sink.                                        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+#define EFFECT_STR "wet"
+#define EFFECT_DURATION 180
+
+#define RUNNING_WATER_STR "the water is running"
+
+inherit "/classes/inanimate/intransients/appliance";
+
+void
+create()
+{
+   appliance::create();
+   set_id        ( ({"sink"}) );	// How sicose finds this item.
+   set_short        ("kitchen sink");	// The name of this item.
+   set_long ("The white enamel, double welled sink is obviously a " + 
+             "recent addition to the kitchen.");	
+   set_weight       (30);		// Kg.  (although, it is intransient)
+   set_height       (40);		// cm.    
+   set_width        (60);		// cm.   
+   set_depth        (60);		// cm.
+   set_manner_held  ("stacked in it"); 
+   set_transient_list( ({"dish/plate/dinner", "cutlery/fork"}) );
+}
+
+void
+turn_on()
+{
+   appliance::turn_on();
+   add_delta_adjective(RUNNING_WATER_STR);
+}
+
+void
+turn_off()
+{
+   appliance::turn_off();
+   remove_delta_adjective(RUNNING_WATER_STR);
+}

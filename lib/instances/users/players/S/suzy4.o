@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Suzy4"
+long_desc "A player named suzy4."
+obj_type 4
+names ({"suzy4","yourself","Suzy4",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "suzy4"
+human_type 2
+password "yD.iQXaLyT3YU"
+dflt_costume "suzy4"
+costume_names ({"suzy4",})
+costume_descriptions ({"A player named suzy4.",})
+ticketholder_name "suzy4"
+total_usage 4

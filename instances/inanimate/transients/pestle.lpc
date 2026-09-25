@@ -1,0 +1,37 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    pestle.c                                                 \\
+//                                                                       \\
+// Description: large, heavy brass pestle.                               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/29/94  abr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/transients/inanm_trns";
+
+void 
+create()
+{
+   inanm_trns::create();
+
+   set_id        ( ({"pestle"}) );  // How Sicose find this item.
+   set_short        ("brass");     // This items name.
+   set_long         ("A heavy solid brass pestle."); // It's full description.
+   set_flammability (NONE);            // NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(0);            // Sec. Time in seconds it will burn.
+   set_weight       (1.5);             // Kg.  Objects weight.
+   set_height       (40);            // cm.  These are looked at to see if the 
+   set_width        (5);             // cm.  potential object to be contained
+   set_depth        (5);             // cm.  will fit within.
+   set_form         (SOLID);          // GAS | LIQUID | SOLID
+   set_rigidity     (RIGID);          // RIGID | LIMP
+   set_dynamacy     (STATIC);         // Is it usable in some way? 
+}

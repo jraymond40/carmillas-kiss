@@ -1,0 +1,47 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    window.c                                                 \\
+//                                                                       \\
+// Description: The generic window.                                      \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/30/93  jmr  Created                                                \\
+// 07/30/94  jmr  Seperated out the closable functions.                  \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+inherit "/classes/closable";
+
+void
+restart()
+{
+   inanm_intrns::restart();
+   closable::restart();
+}
+
+void
+create()
+{
+   inanm_intrns::create();
+   closable::create();
+
+   set_id        ( ({"window"}) );
+   set_short        ("window");
+   set_long         ("Between the dirty glass panes and the overgrowth " +
+                     "outside, you can discern very little through the " +
+                     "window.");
+   set_flammability (NONE);
+   set_burn_duration(0);
+   set_weight       (50);   /* Rather pointless since it's immoveable */
+   set_height       (250);
+   set_width        (200);
+   set_depth        (3);
+   set_form         (SOLID);
+   set_rigidity     (RIGID);
+   set_closable     (TRUE);   // By default open/closable.
+}

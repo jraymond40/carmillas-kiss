@@ -1,0 +1,27 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    inanm_trns_vessel.c                                      \\
+//                                                                       \\
+// Description: Inanimate, transient, vessel objects.                    \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 09/15/93  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\  
+// initialize()                                                          \\  
+//                                                                       \\  
+//=======================================================================\\
+*/
+
+inherit "/classes/inanimate/transients/inanm_trns";
+inherit "/classes/vessel";
+
+void
+create()
+{
+   inanm_trns::create();
+   vessel::create();
+}

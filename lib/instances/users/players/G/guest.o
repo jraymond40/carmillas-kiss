@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Guest"
+long_desc "A player named guest."
+obj_type 4
+names ({"guest","yourself","Guest",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "guest"
+human_type 2
+password "OCvFFCv0KJN5s"
+dflt_costume "guest"
+costume_names ({"guest",})
+costume_descriptions ({"A player named guest.",})
+ticketholder_name "guest"
+total_usage 12

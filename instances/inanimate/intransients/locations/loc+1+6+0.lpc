@@ -1,0 +1,38 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+1+6+0.c                                              \\
+//                                                                       \\
+// Description: Grandfeather's room.                                     \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/08/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("Grandfeather's room");
+   set_long (
+      "A hurricane has hit this place... or at least it appears to have. " + 
+      "One would have to wade through the clothes upon the floor to get " + 
+      "to the bed, and a chair has apparently drowned in them. A bureau, " + 
+      "drawers askew, appears to contain no clothes whatsoever, but is " + 
+      "instead laboring under the weight of a large stack of books.");
+
+   set_intransient_list( ({"bed/full-striped", "bureau/simple", 
+                           "seat/chair/wooden"}) );
+
+   set_adjacent_locations(
+      ({ "loc+2+6+0" }),
+      ({ "east" }),
+      ({ "dr+1.5+6+0"}) );
+}

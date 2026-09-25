@@ -1,0 +1,42 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+4+5+0.c                                              \\
+//                                                                       \\
+// Description: Servent's commons                                        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/02/94  raf  Original creation                                      \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("servent's commons");
+   set_long (
+      "The roughly hewn plank flooring of this smallish room has been worn smooth " +
+      "by the passage of countless years and feet.  Standing gamely in the center " +
+      "of that floor, a medium size table of wood and iron is flanked by a low bench.  " +
+      "Against the north wall, a fancifully carved hutch looks vaugely embarrassed " +
+      "in this otherwise entirely rustic setting.");
+
+   set_adjacent_locations(
+      ({ "loc+4+6+0",  "loc+3+5+0"}),
+      ({ "south",      "west"}),
+      ({ "dr+4+5.5+0", "" }) );
+
+   set_intransient_list(
+       ({ "table/servants_table", "fancy_hutch", "design", "shelves/+4+5+0-bottom",
+          "shelves/+4+5+0-top", "seat/bench/low_bench", "window/east"}) );
+       
+   set_transient_list(
+       ({ "seat/stool/stool", "seat/stool/wobbly_stool"}) );
+}

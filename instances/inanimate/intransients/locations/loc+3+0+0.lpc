@@ -1,0 +1,38 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+0+0.c                                              \\
+//                                                                       \\
+// Description: The east foyer, windowed.                                \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/05/93  jmr  Original creation                                      \\
+// 05/18/94  jmr  Modified for use w/ Sicose.                            \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include "/std_defs.h"
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("east foyer");
+
+   set_long("You are in the east section of the foyer, dwarfed by " +
+            "immense windows. These " +
+            "would have provided a beautiful view overlooking the town " +
+            "below, if not for the overgrown bushes that nearly choke " +
+            "out even the rays of this evenings full pale orb."); 
+
+   set_adjacent_locations(({ "loc+4+0+0", "loc+2+0+0"}),
+                          ({ "east",      "west"}),
+                          ({ "",          ""}) );
+
+   set_intransient_list( ({"rose_bushes", "window/+3+0+0"}) );
+}

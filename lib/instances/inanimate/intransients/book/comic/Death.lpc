@@ -1,0 +1,29 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    book/comic/Death.c                                       \\
+//                                                                       \\
+// Description: THe comic book "The Books Of Magic".                     \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/09/94  jmr  Created                                                \\
+//                                                                       \\
+//============= Copyright 1994 ==== Raymond Interactive Theatre, Ltd.  ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/book_intrns";
+
+void
+create()
+{
+   book_intrns::create();
+
+   set_id        ( ({"comic,`Death'"}) );	// How sicose finds this item.
+   set_short        ("comic book titled `Death: The High Cost Of Living'"); // The name of this item.
+
+   // The in-depth description.
+   set_long ("A young man, in the depths of despair, enounters Death and " + 
+      "discovers she's really quite nice.");	
+}

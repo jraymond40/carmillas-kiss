@@ -1,0 +1,33 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    floor-dusty.c                                            \\
+//                                                                       \\
+// Description: floor-dusty.c                                            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/24/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/floor";
+
+void
+create()
+{
+   floor::create();
+
+   set_id        ( ({"dust"}) );	// How sicose finds this item.
+   set_short        ("dust");		// The name of this item.
+
+   // The in-depth description.
+   set_long         (
+      "Looking about, you stoop down to inspect the dust upon the " +
+      "floor. While it's obvious this room is seldom entered, you " +
+      "also notice someone has been in here recently.");	
+}

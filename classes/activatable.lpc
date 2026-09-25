@@ -1,0 +1,52 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    activatable.c                                            \\
+//                                                                       \\
+// Description: For objects that can be turned on and off.               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+#define ACTIVATED_STR "turned on"
+
+private nosave int mode;
+
+void set_mode(int setting) { mode = setting; }
+int  query_mode()          { return mode; }
+
+void
+restart()
+{
+   mode = OFF;
+}
+
+void
+turn_on()
+{
+   set_mode(ON);
+   this_object()->add_delta_adjective(ACTIVATED_STR);
+}
+
+void
+turn_off()
+{
+   set_mode(OFF);
+   this_object()->remove_delta_adjective(ACTIVATED_STR);
+}
+
+string*
+use(object tp, object recipient)
+{
+   if (mode == OFF) mode = ON;
+   else mode = OFF;
+   return( ({".",".",".",
+         "turn", 
+         "",
+         (mode == ON ? "on" : "off") }) );
+}

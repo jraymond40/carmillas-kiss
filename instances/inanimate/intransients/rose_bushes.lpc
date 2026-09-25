@@ -1,0 +1,37 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    rose_bushes.c                                            \\
+//                                                                       \\
+// Description: Thorny Roses.                                            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/18/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+   set_id        ( ({"bushes"}) );
+   set_short        ("bushes");
+   set_long         ("Once gorgeous rose bushes have long since become " +
+                     "merely choked, twisted thorns.");
+   set_flammability (LOW);
+   set_burn_duration(1200);
+   set_weight       (200); /* Rather pointless since it's immoveable */
+   set_height       (450);
+   set_width        (300);
+   set_depth        (200);
+   set_form         (SOLID);
+   set_rigidity     (RIGID);
+}

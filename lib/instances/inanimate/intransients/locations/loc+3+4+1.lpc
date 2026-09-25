@@ -1,0 +1,31 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+4+1.c                                              \\
+//                                                                       \\
+// Description: Entrance to room #10.                                    \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/06/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("hall, outside room #10");
+   set_long (
+      "To the east lies room #10. The hall continues north and south.");
+
+   set_adjacent_locations(
+      ({ "loc+3+3+1", "loc+3+5+1", "loc+4+3+1"}),
+      ({ "north",     "south",     "east"}),
+      ({ "",          "",          "dr+3.5+4+1"}) );
+}

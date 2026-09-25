@@ -1,0 +1,207 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    Grandfeathers.c                                          \\
+//                                                                       \\
+// Description: An NPC.                                                  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/26/93  jmr  Original                                               \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+//                                                                       \\  
+//=======================================================================\\
+#include <config.h>
+#include <std_defs.h>
+#include <npc_defs.h>
+
+// Function prototypes
+public void initialize(object where);
+public void catch_tell(string str);
+
+inherit "/classes/living/human/npcs/npc";
+
+string cue;
+string victim_location;
+int    time_of_cue;
+object Oma;
+object Junior;
+
+public
+void
+initialize(object where)
+{
+   npc::initialize(where, "grandfeathers");
+   define_gender("male");
+}
+
+
+public
+void
+catch_tell(string str)
+{
+   string *word;
+
+   word = explode(str, " ");
+
+   if (!Oma)           Oma = find_living("oma");
+   if (!Junior)     Junior = find_living("junior");
+
+   /* If this is a valid command string, extract all its parts. */
+   if (extract( word[0], 0, 2) == "*>[")
+   {
+      cue = extract( word[0], 3, 4);
+
+      /* Only valid cues are able to set variables & pre-empt previous cues */
+      if (cue == "A5" || cue == "A7" || 
+          cue == "C0" || cue == "C2" || cue == "C4" || cue == "C6" || cue == "C8" || cue == "CA" ||
+          cue == "D6" || cue == "D8" ||
+          cue == "Z0" || cue == "Z1" || cue == "Z2" || cue == "Z3" )
+      {
+         /* Stop whatever we had planned to do next */ 
+         do{} while(remove_call_out("command") != -1);
+         time_of_cue = 0;
+
+         /* First cue sets all the important variables */   
+         if (cue == "A5")
+         {
+            victim_location = LOCATION_NUMBER(environment(Oma));
+         }
+
+         /* Do this cue at the next heartbeat */
+         set_heart_beat(ON);
+      }
+
+      /* In the event of an error */
+      else if (cue == "Z9")
+      {
+         /* Stop whatever we had planned to do next */ 
+         do{} while(remove_call_out("command") != -1);
+         set_heart_beat(OFF);
+         command("expressions: yell *>[say] Help! I can't perform my role - I'm confused!");
+      }
+      
+      else 
+      {
+         command("expressions: yell *>[say] I don't know the cue: " + cue + ".");
+      }
+
+   }
+   /* Other events. */ 
+   else 
+   {
+   }
+
+   if (NPC_DEBUG) write_file(LOG_DIR + query_cap_name() + ".log", str);
+
+   return;
+}     
+
+
+heart_beat(string str)
+{
+   int time_now;
+
+
+   if (cue == "A5")
+   {
+      command("*>[say] Hmmm... yes, yes... I'm going.");
+      moveto(victim_location);
+      command("expressions yawn *>[say] Yes, vhat is it voman, zhat you must vake an old man from his nap?"); 
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma A6");
+   }
+   else if (cue == "A7")
+   {
+      command("expressions: scoff *>[say] Hmphh...");
+      /* 
+      // Leave the room - Go to the front desk, unless we're already there, 
+      // in which case we can go virtually anywhere else. 
+      */
+      if (LOCATION_NUMBER(environment(this_player())) != "+1+0+0") command("moveto +1+0+0");
+      else command("moveto +0+1+1");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma A8"); 
+   }
+   else if (cue == "C0")
+   {
+      /* Grandfeathers room will have a lock, ensuring no other players will be there */
+      command("*>[say] Shhh... pretend I moved to my room (it doesn't exist yet).");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue Oma C1");
+   }
+   else if (cue == "C2")
+   {
+      command("*>[say] Indeed.");
+      command("expressions: read *>[say] Archdoxis");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma C3");
+   }
+   else if (cue == "C4")
+   {
+      command("*>[say] Voman, vill you hush for a moment? Listen to vhat I discovered in zhe " +
+              "library - it vas written by Paracelsus himself.");
+      command("expressions: read *>[say] Vampyres: On the subject of these devilish creatures I have made a  " +
+              "discovery of great importance. Utilizing the works of Kuritsinn, as well  " +
+              "as those of Beheim and Sadovianu I began to discover the real life of the  " +
+              "Voivode...");
+      command("mumble");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma C5");
+   }
+   else if (cue == "C6")
+   {
+      command("expressions: read *>[say] While the traditional safeguards against these beasts have sometimes been " +
+              "effective, they are seldom reliable. To ensure certain success against the " +
+              "stalking beast, one must think and sense just as they. To this end, the  " +
+              "hunter himself must symbollicly consume the liquid life source...");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma C7");
+   }
+   else if (cue == "C8")
+   {
+      command("*>[say] No... now shhh! It says 'Inhalation of the plasma-based Yliastrum elixir  " +
+              "provides greatly enhanced perception to the hunter. It will tax the  " +
+              "stamina, but prove invaluable in such matters.");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma C9");
+   }
+   else if (cue == "CA")
+   {
+      cue = "";
+      set_heart_beat(OFF);
+      command("use Archdoxis");
+   }
+   else if (cue == "D6")
+   {
+      command("moveto " + LOCATION_NUMBER(environment(Junior)));
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma D7");
+   }
+   else if (cue == "D8")
+   {
+      command("expressions: mumble *>[say] Hmmph! Doesn't look like zhere's enough here for zhat...");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma D9");
+   }
+
+   /* The section here is reserved for default actions. */
+   else 
+   {
+      command("yell Heartbeat has no instructions for the cue: " + cue + ".");
+      cue = "";
+      set_heart_beat(OFF);
+   }
+   
+   return SUCCEED;
+}     

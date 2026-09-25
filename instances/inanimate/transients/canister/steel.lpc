@@ -1,0 +1,26 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    canister/steel.c                                         \\
+//                                                                       \\
+// Description: Brushed steel canister.                                  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/28/94  jmr  Updated                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/transients/canister";
+
+void 
+create()
+{
+   canister::create();
+
+   set_id        ( ({"canister,steel"}) );
+   set_short        ("steel canister");
+   set_long         ("A brushed steel canister.");
+}

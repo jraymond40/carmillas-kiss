@@ -1,0 +1,33 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+1+1+0.c                                              \\
+//                                                                       \\
+// Description: The clinic's waiting area.                               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/26/94  jmr  Original creation                                      \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("clinic waiting area");
+   set_long (
+      "You`re apparently in the waiting area, as two large benches fill " + 
+      "the room.");
+
+   set_adjacent_locations(({ "loc+2+1+0", "loc+0+1+0"}),
+                          ({ "east",      "west"}),
+                          ({ "",          ""}) );
+
+   set_intransient_list( ({"seat/bench/rough"}) );
+}

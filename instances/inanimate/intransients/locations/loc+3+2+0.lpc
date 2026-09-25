@@ -1,0 +1,36 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+2+0                                                \\
+//                                                                       \\
+// Description: The north eastern corner of the Ballroom.                \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/04/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("ballroom north eastern corner");
+   set_long (
+      "The ballroom's northeastern corner, decorated in " + 
+      "oak and emerald green, is overhung by a candelabra. A door in the " + 
+      "eastern wall provides access to the library.");
+
+   set_adjacent_locations(
+      ({ "loc+3+3+0",  "loc+4+2+0",  "loc+2+2+0"}),
+      ({ "south",      "east",       "west"}),
+      ({ "",           "dr+3.5+2+0", ""}) );
+
+   set_intransient_list( 
+      ({"candelabra/hanging-small", "floor/parquet"}) );
+}

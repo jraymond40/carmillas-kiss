@@ -1,0 +1,149 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    Oma.c                                                    \\
+//                                                                       \\
+// Description: The matronly worry wart.                                 \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/13/93  jmr  Original                                               \\
+// 06/01/93  jmr  Modified to call exposition cmd's from heart_beat.     \\
+// 05/24/94  jmr  Implemented under Sicose                               \\
+// 07/27/94  jmr  Readied for going online.                              \\
+// 09/08/94  jmr  Rewrote to read from script.                           \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+#include <config.h>
+#include <std_defs.h>
+#include <npc_defs.h>
+
+// Function prototypes
+public void initialize(object where);
+
+inherit "/classes/living/human/npcs/npc";
+
+private nosave string  idx;      // So as not to be redeclared every heartbeat.
+private nosave string  cmd_str;  // So as not to be redeclared every heartbeat.
+
+public
+void
+create()
+{
+   set_transient_list( ({"rag", "key/master"}) );
+   npc::create();
+}
+
+public
+void
+initialize(object where)
+{
+   npc::initialize(where, "oma");
+   define_gender("female");
+   set_long(
+      "A spectacled woman whose wiry hair seemingly refuses " +  
+      "to be reigned in by hairpins. Maybe it's just this " +
+      "evening, but her nervousness and small stature can't help " +
+      "but remind one of a mouse.");
+}
+
+
+// Overload the npc.c definition so Oma can handle special cases.
+heart_beat(string str)
+{
+   idx = sprintf("%s%d", cue, event_num);
+
+   // If there are no more events defined, shutdown heartbeat.
+   if (undefinedp(cmd[idx]) )
+   {
+      // Cleanup
+      time_of_cue = 0;
+      cue = "";
+      event_num = 0;
+      set_heart_beat(OFF);
+      return;
+   }
+
+   // If it ain't time, return ASAP.
+   if (time() < time_of_cue + cmd[idx][0]) return; 
+   
+   // Here's where the special cases that wouldn't quite fit into the 
+   // scripting language, or were just-plain-quicker-to-implement-here-for-now are.
+   switch(idx)
+   {
+
+      case "B41": // Assure the victim is conscious before proceeding past this point. 
+         if ( (int) (find_victim()->conscious()) != TRUE ) return;
+
+      case "D03": // Allow player access to the chateau.
+         effect(LOCAL, this_object(),
+            "You reach over and remove the ropes.\n",
+            "Oma reaches over and removes the velveteen ropes.\n");
+         environment(this_object())->add_exits();
+         break;
+
+      case "DB1": // A bit of a cheat here... give everyone a flask
+      {
+         object *player;
+         object yli_flask, key;
+         int i;
+         
+         player = players();
+         for (i = 0; i < sizeof(player); i++)
+         {
+            if (! locally_present("flask", player[i]))
+            {
+               yli_flask = clone_object(FLASK_YLIASTRUM);
+               yli_flask->initialize(player[i]);
+               key = clone_object(ROOM_KEY);
+               key->initialize(player[i], sprintf("%d",i) );
+            }
+         } 
+         effect(LOCAL, this_player(),
+            "You reach into the case and hand everyone a flask along with their key.\n",
+            "Oma begins reaches into the case and hands everyone a " +
+            "flask, along with their room key. As she approaches you, " +
+            "Oma smiles and hands you a key and flask.\n");
+         Director->set_game_mode(START);
+      } break;
+        
+      case "A90": // Skip these actions if Grandfeathers is here or Junior isn't.
+      case "A92":
+         if ((query_Grandfeathers_location() == query_victim_location()) &&
+             (query_Juniors_location() != query_victim_location()) )
+             event_num++; // Jump ahead to the next event
+
+      default:
+         switch(sizeof(cmd[idx]))
+         {
+      case 2: cmd_str = cmd[idx][1]; break;
+            case 3: cmd_str = sprintf(cmd[idx][1],
+               (string) call_other(this_object(), cmd[idx][2])); break;
+            case 4: cmd_str = sprintf(cmd[idx][1],
+               (string) call_other(this_object(), cmd[idx][2]),
+               (string) call_other(this_object(), cmd[idx][3])); break;
+            case 5: cmd_str = sprintf(cmd[idx][1],
+               (string) call_other(this_object(), cmd[idx][2]),
+               (string) call_other(this_object(), cmd[idx][3]),
+               (string) call_other(this_object(), cmd[idx][4])); break;
+            case 6: cmd_str = sprintf(cmd[idx][1],
+               (string) call_other(this_object(), cmd[idx][2]),
+               (string) call_other(this_object(), cmd[idx][3]),
+               (string) call_other(this_object(), cmd[idx][4]),
+               (string) call_other(this_object(), cmd[idx][5])); break;
+            case 7: cmd_str = sprintf(cmd[idx][1],
+               (string) call_other(this_object(), cmd[idx][2]),
+               (string) call_other(this_object(), cmd[idx][3]),
+               (string) call_other(this_object(), cmd[idx][4]),
+               (string) call_other(this_object(), cmd[idx][5]),
+               (string) call_other(this_object(), cmd[idx][6])); break;
+
+            default: return; // Well, if it's too much or too little dynamic data, skip it.
+         }
+         if (NPC_DEBUG) write_file(LOG_DIR + query_cap_name() + ".log",
+           idx + " [" + cmd_str + "]\n");
+         command(extract(cmd_str, 0, strlen(cmd_str) - 2));
+         time_of_cue = time();
+   }
+   event_num++;         
+   return SUCCEED;
+}     

@@ -1,0 +1,37 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    star_of_David.c                                          \\
+//                                                                       \\
+// Description: Your standard vampire repelling Jewish star.             \\
+// History:                                                              \\
+//                                                                       \\
+// 06/25/94  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+
+inherit "/classes/inanimate/transients/inanm_trns_vr";
+
+void 
+create()
+{
+   inanm_trns_vr::create();
+
+   set_id        ( ({"star"}) );
+   set_short        ("star of David");
+   set_long         ("Your standard, Jewish issue, Star-of-David.");
+   set_flammability (NONE);
+   set_burn_duration(0);
+
+   set_weight       (1);
+   set_height       (8);
+   set_width        (8);
+   set_depth        (2);
+   set_form         (SOLID);
+   set_rigidity     (RIGID);
+   set_vamp_repellant(1.0);
+}
+

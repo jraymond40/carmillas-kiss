@@ -1,0 +1,23 @@
+#classes/living/human/users/players/player.c
+short_desc "Dope"
+long_desc "A player named Dope."
+obj_type 4
+names ({"dope","yourself","Dope",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "dope"
+human_type 2
+password "wczW.6ZAh9imE"
+dflt_costume "Dope"
+costume_names ({"Dope",})
+costume_descriptions ({"A player named Dope.",})
+ticketholder_name "Dope"

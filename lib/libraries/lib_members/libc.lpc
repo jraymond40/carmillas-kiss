@@ -1,0 +1,5 @@
+// Whatever libc functions that aren't already implemented go here, for now.
+// Some won't need to be implemented.
+
+#define strcat(x,y)	(x = x + y)
+#define strcpy(x,y)     (x = y)

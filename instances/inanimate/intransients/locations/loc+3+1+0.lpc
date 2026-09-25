@@ -1,0 +1,36 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+1+0.c                                              \\
+//                                                                       \\
+// Description: The study.                                               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/25/94  jmr  Original creation                                      \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("study");
+   set_long (
+      "Here in the study, the walls are lined with shelves, each "
+      "filled with volume after volume of old medical books. An " + 
+      "antique writing desk is accompanied by a chair beneath, and "+ 
+      "another beside it. ");
+
+   set_adjacent_locations(({ "loc+4+1+0", "loc+2+1+0"}),
+                          ({ "east",      "west" }),
+                          ({ "",          ""}) );
+
+   set_intransient_list( ({"shelves/+3+1+0", "seat/chair/wooden", 
+                           "seat/chair/wooden", "desk_+3+1+0"}) );
+}

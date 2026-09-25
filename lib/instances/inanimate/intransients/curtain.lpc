@@ -1,0 +1,34 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    curtain.c                                                \\
+//                                                                       \\
+// Description: The curtain seperating the ER & OR.                      \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/27/94  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1994 ===== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+inherit "/classes/cloth";
+
+void 
+create()
+{
+   inanm_intrns::create();
+   cloth::create();
+   set_id(         ({"curtain"}) );
+   set_short        ("seperator curtain");
+   set_long         ("The burgundy velvet curtain acts as a room divider.");
+   set_flammability (LOW);
+   set_burn_duration(300);
+   set_weight       (30);
+   set_height       (200);
+   set_width        (300);
+   set_depth        (1);
+}

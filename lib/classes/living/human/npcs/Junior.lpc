@@ -1,0 +1,41 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    Junior.c                                                 \\
+//                                                                       \\
+// Description: An NPC.                                                  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/13/93  jmr  Created                                                \\
+// 08/28/94  jmr  Readied for going online.                              \\
+// 09/07/94  jmr  Rewrote to read from a script.                         \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+#include <config.h>
+#include <std_defs.h>
+#include <npc_defs.h>
+
+public void initialize(object where);
+
+inherit "/classes/living/human/npcs/npc";
+
+public
+void
+create()
+{
+   set_transient_list( ({"key/master"}) );
+   npc::create();
+}
+
+public
+void
+initialize(object where)
+{
+   define_gender("male");
+   npc::initialize(where, "junior");
+   set_long("Rather tall and lanky from the cruelty of adolescence, the " + 
+      "lad appears well mannered and quite bright.");
+}
+
+
+

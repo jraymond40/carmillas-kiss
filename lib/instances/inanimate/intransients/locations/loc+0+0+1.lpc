@@ -1,0 +1,37 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+0+0+1.c                                              \\
+//                                                                       \\
+// Description: Upper Von Hohenheim tower / Stairwell.                   \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/24/94  jmr  Original creation                                      \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("top of the stairwell in the Von Hohenheim tower");
+   set_long (
+      "Here in the Von Hohenheim tower, at the top of the stairwell " +
+      "that lines it's circular stone walls, the air is damp. " +
+      "Although the tower continues upwards, the stairs here no " +
+      "longer do.");
+
+   set_adjacent_locations(({ "loc+0+1+1", "loc+1+0+1", "loc+0+0+0"}),
+                          ({ "south",     "east",      "down"}),
+                          ({ "",          "",          ""}) );
+
+   set_intransient_list(
+      ({"tower_+0+0+0", "stairwell_+0+0+0", "wall-granite"}) );
+}

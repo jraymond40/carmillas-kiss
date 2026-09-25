@@ -1,0 +1,48 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    cutlery/spoon-silver.c                                   \\
+//                                                                       \\
+// Description: A silver serving spoon, which repels vampires.           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/29/93  jmr  Created                                                \\
+// 08/11/94  jmr  Broke out cutlery and (previously) vamp_repellant.     \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+#include <commons.h>
+#include <std_defs.h>
+
+inherit "/classes/inanimate/transients/cutlery";
+inherit "/classes/vamp_repellant";
+
+
+void 
+create()
+{
+   cutlery::create();
+
+   set_id ( ({"spoon"}) );
+   set_short ("silver spoon");
+   set_long  ("A large serving spoon, unlike the other " + 
+      "cutlery, you notice this one is made of actual silver.");
+
+   set_vamp_repellant(0.20);
+}
+
+// Integrate use from cutlery (inanm_trns) and vamp_repellant.
+string* 
+use(object wieldor, object wieldee)
+{
+
+   if (!wieldee) return cutlery::use(wieldor, wieldee);
+
+   // Seperate the interactions between vamp_repelling items and vampires.
+   if ((int)   wieldee->query_object_type() != LIVING || 
+       (int)   wieldee->query_role() != VAMPIRE ||
+       (float) (this_object()->query_vamp_repellant()) == 0.0)
+      return cutlery::use(wieldor, wieldee);
+
+   else return vamp_repellant::use(wieldor, wieldee);
+}

@@ -1,0 +1,37 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    rug.c                                                    \\
+//                                                                       \\
+// Description: The rug of the master suites dressing area.              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/27/93  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+inherit "/classes/cloth";
+
+void
+create()
+{
+   inanm_intrns::create();
+   cloth::create();
+
+   set_id(         ({"rug"}) );
+   set_short        ("rug");
+   set_long         ("Kneeling down, you rub the rug between your " +
+                     "fingers. Musty as it is, its quality " +
+                     "workmanship is evident.");
+   set_flammability (LOW);
+   set_burn_duration(300);
+   set_weight       (30);
+   set_height       (200);
+   set_width        (300);
+   set_depth        (1);
+}

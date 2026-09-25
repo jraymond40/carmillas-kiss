@@ -1,0 +1,98 @@
+#
+# Events upon the first bite
+#
+[scene#A]
+
+[cue#2]
+8;moveto %s;query_Omas_location
+4;cue oma A3
+[end_cue]
+
+[cue#4]
+6;*>[say] But Oma, I did that when you asked earlier...
+6;moveto %s;query_Grandfeathers_location
+8;*>[say] Grandfeathers, Grandfeathers... Oma needs you in the %s!;query_Omas_location_name
+8;cue grandfeathers A5
+4;moveto +2+0+0
+5;look doors
+[end_cue]
+
+[cue#A]
+4;moveto %s;query_Omas_location
+2;cue oma A9
+[end_cue]
+[end_scene]
+
+#
+# 
+[scene#B]
+[cue#1]
+4;moveto %s;query_Omas_location
+4;cue oma B2
+[end_cue]
+
+[cue#3]
+10;*>[say] I don't know Oma... last I saw, he was trying to find his reading glasses, said he had some studying to do.
+10;cue oma B4
+[end_cue]
+[end_scene]
+
+
+#
+# Here's the introduction
+#
+[scene#D]
+
+[cue#1]
+4;moveto %s;query_Omas_location
+4;expressions: interrupt *>[say] Oma, found another case of wine... Burgundy, I'd guess.
+10;cue oma D2
+[end_cue]
+
+[cue#3]
+4;expressions: nod
+4;cue oma D4
+[end_cue]
+
+[cue#5]
+6;*>[say] Well, lets see...
+8;expressions: read *>[say] Contents: Yliastrum Elixir - a life extension plasma.  Uses: Life extension, instantaneous muscle and stamina building.
+12;cue Grandfeathers D6
+[end_cue]
+
+[cue#A]
+6;*>[say] Well it does say: 'Warning: The effect of overdoses remains unstudied.'
+6;expressions: read *>[say] It goes on,'The contents herein presented to the special conference of Medical Academia of Europe. It's signed Vividus, Paracelsus.
+14;cue Oma DB
+[end_cue]
+
+[cue#C]
+6;*>[say] Well, if you'll just follow me.
+8;move west
+10;*>[say] Everyone coming? Great.
+16;*>[say] This Chateau is thought to be originally built upon the site of a structure built by the Babenberg family, around 1100... This way folks.
+16;move west
+16;*>[say] at least thats what they figure from the stonework found in the cellar and here in the towers.
+10;*>[say] Careful up the stairs here, they're rather steep.
+8;move up
+14;*>[say] Later it fell into the hands of the Bohemians, who shortly there after lost it in a war with the Hapsburg family. The Hapsburgs owned all of Austria right up until the first World War.
+14;*>[say] This way...
+4;move south
+10;*>[say] During the early Hapsburg rule it was built upon for the marriage of a Hapsburg daughters. However, she chose instead to elope with a peasant, and the place stood gathering dust for many, many years.
+16;*>[say] Then in 1540, Paracelsus, the great physician, was called upon by Prince Ernst of Bavaria for a special cure. Paracelsus successfully cured the desperate Ernst and was rewarded by both a promise of support for his research, as well as a bride, Ernst niece of Hapsburgian descent, Carmilla Karnstein.
+16;look busts *>[say] In fact this room, and particularly this bust was created in honor of the Princes kindness.
+16;*>[say] Over in this section of the gallery...
+8;move east
+12;*>[say] ...you can see various Karnstein family members as well as Paracelsus himself.
+12;expressions: smile *>[say] Hey, I'm remembering this pretty good... my grandparents and I have only been here for a few months, and it's taken me a while but I'm finally getting this part memorized!
+12;move east
+12;*>[say] And here, you see the last owner before we were awarded federal funding to restore this chateau. Mircalla Karnstein, shown here in this portrait, apparently committed suicide. A great sorrow befell the once great Karnstein family, that later died out.
+12;expressions: laugh *>[say] Some rumors had it that the schloss was haunted by Mircalla, other rumors I heard from kids at school say a pack of blood thirsty gypsies had moved into the place, stealing and eating the towns children.
+1;expressions: smile
+12;*>[say] Well, that's about all I can remember... right this way to your rooms.
+8;move south
+12;*>[say] Now, if you'll just glance at the room key Oma gave you, you'll find your room number, with rooms 1 through 6 are here on the western side of the chateau, and 7 through 13, are here on the eastern side.
+12;expressions: smile *>[say] We hope you enjoy your stay here at the Karnstein Chateau.
+4;moveto +4+6+0
+[end_cue]
+[end_scene]

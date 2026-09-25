@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Amit"
+long_desc "A player named Amit."
+obj_type 4
+names ({"amit","yourself","Amit",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 1
+closed 1
+closable 1
+volume_contained 2595
+gender ""
+name "amit"
+human_type 2
+password "JO2rJi18HN.D6"
+dflt_costume "Amit"
+costume_names ({"Amit",})
+costume_descriptions ({"A player named Amit.",})
+ticketholder_name "Amit"
+total_usage 1585

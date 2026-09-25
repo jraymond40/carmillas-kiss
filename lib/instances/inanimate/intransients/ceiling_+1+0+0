@@ -1,0 +1,39 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    ceiling_+2+0+0.c                                         \\
+//                                                                       \\
+// Description: The chateaus entryway ceiling.                           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+//                                                                       \\
+/===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+   set_id        ( ({"ceiling"}) );	// How sicose finds this item.
+   set_short        ("ceiling");	// The full description of this item.
+
+   set_long         ("Shadows intertwine throughout the arches of the " +
+                     "ceiling, some 5 meters above."); 
+
+   set_flammability (NONE);		//       NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(0);  		// Sec. Burn duration in seconds 
+   set_weight       (1000);		// Kg.  (although, it is intransient)
+   set_height       (1000);		// cm.    
+   set_width        (1000);		// cm.   
+   set_depth        (1000);		// cm.   
+   set_form         (SOLID);		// GAS | LIQUID | SOLID
+   set_rigidity     (RIGID);		// RIGID | FLEXIBLE
+}

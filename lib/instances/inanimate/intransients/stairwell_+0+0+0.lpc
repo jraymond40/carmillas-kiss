@@ -1,0 +1,40 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    stairwell_+0+0+0.c                                       \\
+//                                                                       \\
+// Description: The stairwell w/in the Von Hohenheim tower.              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+    set_id        ( ({"stairwell"}) );	// How sicose finds this item.
+   set_short        ("stairwell");	// The name of this item.
+   // The in-depth description.
+   set_long         (
+      "You turn and glance at the stairs; formed of granite, they line " +
+      "the circular walls of the tower, to a point. Although they once " +
+      "proceeded further up the tower, they now no longer do.");	
+   set_flammability (NONE);		//       NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(0);  		// Sec. Burn duration in seconds 
+   set_weight       (INFINITE);		// Kg.  (although, it is intransient)
+   set_height       (2500);		// cm.    
+   set_width        (1000);		// cm.   
+   set_depth        (1000);		// cm.   
+   set_form         (SOLID);		// GAS | LIQUID | SOLID
+   set_rigidity     (RIGID);		// RIGID | FLEXIBLE
+}

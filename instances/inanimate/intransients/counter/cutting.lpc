@@ -1,0 +1,26 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    counter/cutting.c                                        \\
+//                                                                       \\
+// Description: A cutting counter.                                       \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/counter";
+
+void
+create()
+{
+   counter::create();
+
+   set_long("Covered in wood, the counter serves as a cutting surface.");
+   set_transient_list(({"garlic"}));
+
+}

@@ -1,0 +1,56 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    save.c                                                   \\
+//                                                                       \\
+// Description: Functions to save the user.                              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/21/93  jmr  Originally derived from LPmud save.c                   \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+//                                                                       \\
+//=======================================================================\\
+*/
+#include <config.h>
+#include <std_defs.h>
+
+void init_actions()
+{
+   add_action("save", "save");
+}
+
+string save_path()
+{ 
+   /* To be redefined by the inheritor */
+   string str;
+   str = (string) this_player()->query_name();
+   str = PLAYER_INSTANCE+str;
+   return str; 
+}
+
+int save()
+{
+   string *dirs;
+   string path;
+   string save_path_str;
+   int i;
+
+   save_path_str = save_path();
+
+   /* Do dirs exist? If not, make 'em */
+   dirs = explode(save_path_str, "/");
+   path = "";
+   for (i=0; i < sizeof(dirs) - 1; i++) 
+   {
+      path += "/" + dirs[i];
+      if (file_size(path) == -1) mkdir(path);
+   }
+
+   /* Save, w/out all that uid overhead */
+   save_object(path);
+
+   return SUCCEED;
+}

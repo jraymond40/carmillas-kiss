@@ -1,0 +1,31 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    dr+3.5+3+0.c                                             \\
+//                                                                       \\
+// Description: The doors between the ballroom and north armory.         \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/31/94  jmr  Created                                                \\
+//                                                                       \\
+//================ Copyright 1994 ==== Raymond Interactive Theatre, Ltd.=\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/door";
+
+void
+create()
+{
+   door::create();
+   set_id( ({"door,oak"}) );
+
+   set_long         (
+      "The varnished oak door complements both the ballrooms parquay floor, " +
+      "as well as the wooden floor of the armory, between which the door " + 
+      "provides access.");
+
+   set_lock("armory north door key");
+   lock();
+}

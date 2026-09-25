@@ -1,0 +1,29 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    canister/ceramic.c                                       \\
+// Description: A ceramic canister.                                      \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/28/94  jmr  Updated                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+//            This should match w/ below  ________  
+//                                       V        V
+inherit "/classes/inanimate/transients/canister";
+
+void 
+create()
+{
+//  ________   This should match the inherit filename above.
+// V        V
+   canister::create();
+
+   set_id        ( ({"canister,ceramic"}) );
+   set_short        ("ceramic canister");
+   set_long         ("A canister made of baked clay.");
+}

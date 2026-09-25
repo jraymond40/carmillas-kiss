@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Dsinn"
+long_desc "A player named Dsinn."
+obj_type 4
+names ({"dsinn","yourself","Dsinn",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "dsinn"
+human_type 2
+password "krCR1Jg/GioKo"
+dflt_costume "Dsinn"
+costume_names ({"Dsinn",})
+costume_descriptions ({"A player named Dsinn.",})
+ticketholder_name "Dsinn"
+total_usage 191

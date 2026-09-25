@@ -1,0 +1,28 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    dish/bowl/bloodletting.c                                 \\
+//                                                                       \\
+// Description: An iron blood-letting bowl.                              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/28/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/transients/bowl";
+
+void 
+create()
+{
+   bowl::create();
+
+   set_weight (3);    // Kg.  It is iron afterall
+
+   set_short("bloodletting bowl");
+   set_long ("A rather large iron bowl used for gathering blood during " + 
+             "blood-letting operations, common of the 15th century.");
+}

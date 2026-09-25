@@ -1,0 +1,27 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    shelves/book_+4+1+0.c                                    \\
+//                                                                       \\
+// Description: Book shelves in the northern library.                    \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/26/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/shelves";
+
+void
+create()
+{
+   shelves::create();
+
+   // Books held here.
+   set_intransient_list( ({"book/Archdoxis_Magicae", "book/Tractatus_Aristotelis"}) );
+}

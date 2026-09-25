@@ -1,0 +1,45 @@
+
+Cue's & A's (actions)
+
+----------
+Oma's cues
+----------
+
+@ A1 [location_of_victim] [victim]
+
+
+
+------------
+Juniors Cues
+------------
+
+@ A2 [this_place]
+   goto [this_place]
+   tell_object [Oma] [A3]
+   command("moveto " +BLAHBLHAHA + "\n");
+   tell_object(Oma, "*>[A3]");
+
+@ A4
+   say "But Oma, I did that when you asked earlier..."
+   goto [location_of_grandfeathers]
+   say "Grandfeathers, Grandfeathers... Oma needs you in the [vicim_room]!"
+   tell_object [grandfeathers] [A5] [victim_room]
+   moveto +2+0+0
+   examine doors
+   moveto [location_of_victim]
+   tell_object [Oma] [A9]
+
+------------------
+Grandfeathers cues
+------------------
+@ A5 [victim_room]
+   say "Hmmm... yes, yes... I'm going."
+   goto [location]
+   yawn "Yes, vhat is it voman, zhat you must vake an old man from his nap?" 
+   tell_object [Oma] [A6]
+
+@ A7
+   scoff "Hmphh..."
+   tell_object [Oma] [A8] 
+   release [go back to previous activities]
+

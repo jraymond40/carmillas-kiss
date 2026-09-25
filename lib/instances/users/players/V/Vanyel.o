@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Vanyel"
+long_desc "Vanyel is a little taller than average, garbed all in Herald's Whites."
+obj_type 4
+names ({"vanyel","yourself","Vanyel",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 45
+closed 1
+closable 1
+volume_contained 62554
+gender "male"
+name "vanyel"
+human_type 2
+password "ENU0xlS7ZljIk"
+dflt_costume "Vanyel"
+costume_names ({"Vanyel",})
+costume_descriptions ({"Vanyel is a little taller than average, garbed all in Herald's Whites.",})
+ticketholder_name "Vanyel"
+total_usage 4294

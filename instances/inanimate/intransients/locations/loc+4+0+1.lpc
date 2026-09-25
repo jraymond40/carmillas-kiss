@@ -1,0 +1,37 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+4+0+1.c                                              \\
+//                                                                       \\
+// Description: The northeast corner of the master suite.                \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 03/12/93  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+*/
+
+#include "/std_defs.h"
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+   set_short("master suite's northeast corner");
+   set_long("You find yourself in the northeast corner of the master " + 
+            "suite. A large fireplace with an overhanging tapestry " +
+            "extends along the northern wall to the corner of the " +
+            "room. In the eastern wall is a boarded over window, " +
+            "and from the center of the room, the foot of the " +
+            "canopied bed extends in to this corner of the room.");
+
+   set_adjacent_locations(({ "loc+4+1+1", "loc+3+0+1"}),
+                          ({ "south",     "west"}),
+                          ({ "",          ""}) );
+
+   set_intransient_list(({"bed/master", "fireplace/gothic", 
+                          "window/boarded1", "tapestry"}) );
+}

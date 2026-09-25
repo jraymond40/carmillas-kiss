@@ -1,0 +1,34 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    hunter.c                                                 \\
+//                                                                       \\
+// Description: Hunter experience level counter.                         \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/28/93  jmr  Created                                                \\
+// 08/23/94  jmr  Added restart()                                        \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+#include <commons.h>
+
+private nosave float hunter_level;
+ 
+void 
+inc_hunter_level()   
+{ 
+   hunter_level++;
+}
+
+float 
+query_hunter_level() 
+{ 
+   return hunter_level; 
+}
+
+void
+restart()
+{
+   hunter_level = 0;
+}

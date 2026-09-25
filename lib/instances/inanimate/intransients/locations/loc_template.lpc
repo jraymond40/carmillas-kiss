@@ -1,0 +1,39 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+x+x+x.c                                              \\
+//                                                                       \\
+// Description: The location template.                                   \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/05/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("west fourier");
+   set_long (
+      "This corner of the chateau is filled by a fireplace colossal " + 
+      "enough to fit a bed within. While the raging fire inside " + 
+      "makes it impossible to stand too closely, it is still easy " + 
+      "to appreciate the craftwork that went into the intricately " +
+      "sculptured mantle and wood littered hearth.");
+
+   set_adjacent_locations(
+      ({ "loc+4+1+0",  "loc+3+0+0"}),
+      ({ "south",      "west"}),
+      ({ "dr+3.5+1+0", "" }) );
+
+   set_intransient_list( 
+      ({"mantle", "faces", "dragon", "fireplace1", 
+        "fire", "hearth", "dragons_mouth"}) );
+}

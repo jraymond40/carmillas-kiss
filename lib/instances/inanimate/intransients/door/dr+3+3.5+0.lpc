@@ -1,0 +1,28 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    dr+3+3.5+0.c                                             \\
+//                                                                       \\
+// Description: The doors between the ballroom and dining room.          \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/31/94  jmr  Created                                                \\
+//                                                                       \\
+//================ Copyright 1994 ==== Raymond Interactive Theatre, Ltd.=\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/door";
+
+void
+create()
+{
+   door::create();
+
+   set_id( ({"door,white"}) );
+
+   set_long         (
+      "Recently refinished, and restored to it's original lustre, the " + 
+      "goldleaf showcases ornate designs against a gloss white backdrop.");
+}

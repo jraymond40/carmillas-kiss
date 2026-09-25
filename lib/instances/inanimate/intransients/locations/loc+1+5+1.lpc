@@ -1,0 +1,30 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+1+5+1.c                                              \\
+//                                                                       \\
+// Description: Hall to Guest Room #5.                                   \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/05/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("hall outside Room #5");
+   set_long ("You stand in the hall outside Room #5.");
+
+   set_adjacent_locations(
+      ({"loc+1+4+1", "loc+1+6+1", "loc+0+5+1"}),
+      ({"north",     "south",     "west"}),
+      ({"",          "",          "dr+0.5+5+1"}) );
+}

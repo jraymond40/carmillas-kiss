@@ -1,0 +1,143 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    liquid.c                                                 \\
+//                                                                       \\
+// Description: Attributes of liquids. Inherit after basic object inherit\\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/12/93  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+
+private string liquid_name;
+
+void set_liquid_name(string str) { liquid_name = str; }
+
+initialize()
+{
+   set_form(LIQUID);
+}
+
+/*
+// To use a liquid we:
+//
+// Apply the liquid to the new object, transfering 
+// some of the liquid's attributes to the new ones.
+// 
+// Quick solutions so we don't have to get into the physics
+// of it all (not now, at least).
+*/
+
+string* use(object user, object recipient)
+{
+   int    tmp;
+   string str;
+   string agent_name;
+   string recip_name;
+   object agent;
+   string *action;
+   string *reaction;
+   string *result;
+
+   action   = allocate(5);
+   reaction = allocate(5);
+
+   agent = this_object();
+
+   /* In the event a user can turn into LIQUID form... */
+   if ((int) agent->query_object_type() == LIVING)
+      agent_name  = (string) agent->query_user_cap_name();
+   else 
+      agent_name  = "the " + (string) agent->query_short();
+
+   if (!recipient)
+   {
+      notify_fail("   Use " + agent_name + " with _what_?\n");
+      return FAIL;
+   }
+
+   if ((int) recipient->query_object_type() == LIVING)
+      recip_name = (string) recipient->query_user_cap_name();
+   else 
+      recip_name = "the " + (string) recipient->query_short();
+
+   /* One can only use it if there's enough there to be used. */
+   if ((int) agent->query_weight() == 0)
+   {
+      notify_fail("   There's not enough " + (string) agent->query_short() + " to use.\n");
+      return FAIL;
+   }
+
+   if ((int) recipient->query_form() == LIQUID)
+   {
+      /*
+      // Set the flammability and burn_duration when mixing two liquids.
+      //
+      // To apply a liquid to a liquid, average their flammability, and 
+      // combine their burn_durations.
+      */
+      tmp = ((int) agent->query_flammability() + (int) recipient->query_flammability()) / 2;
+      recipient->set_flammability( tmp );
+
+      tmp = (int) agent->query_burn_duration() + (int) recipient->query_burn_duration();
+      recipient->set_burn_duration( tmp );
+      recipient->add_delta_adjective(liquid_name + " saturated");
+      recipient->set_weight((int) recipient->query_weight() + (int) agent->query_weight());
+      action[0] = ", swirling the two liquids together";
+      action[1] = ", swirling the two liquids together";
+      action[2] = ", swirling you together";
+      action[3] = "mix";
+      action[4] = "with";
+   }
+   else if ((int) recipient->query_form() == SOLID)
+   {
+      /*
+      // Set the flammability and burn_duration for the recipient solid 
+      //
+      // To apply a liquid to a solid, transfer it's flammability, and 
+      // burn_duration (if longer) to the recipient object.
+      */
+      recipient->set_flammability((int) agent->query_flammability() );
+      tmp = (int) agent->query_burn_duration();
+      if (tmp > (int) recipient->query_burn_duration()) recipient->set_burn_duration(tmp);
+      recipient->add_delta_adjective(liquid_name + "-soaked");
+      recipient->set_weight((int) recipient->query_weight() + (int) agent->query_weight());
+      action[0] = ", covering " + (string) recipient->query_possessive() + " in " + how_many(1, liquid_name) + "y coat";
+      action[1] = ", covering " + (string) recipient->query_possessive() + " in " + how_many(1, liquid_name) + "y coat";
+      action[2] = ", covering you in " + how_many(1, liquid_name) + "y coat";
+      action[3] = "pour";
+      action[4] = "onto";
+   }
+   else /* Assuming a GAS here... */
+   {
+      notify_fail("   Unfortunately, that won't work.\n");
+      return FAIL;
+   }
+
+   /*
+   //  Since it's really upto the vessel to delete this object the
+   //  least we can do is minimize to nearly nothing after use.
+   */
+   agent->set_id        ( ({"residue"}) );
+   agent->set_short        ( how_many(1, agent_name) + "y residue");
+   agent->set_flammability (NONE);
+   agent->set_burn_duration(0);
+   agent->set_weight       (0);
+
+   reaction = (string *) recipient->use_recipient(user, recipient);
+
+   if (!reaction) return FAIL;
+
+   result[0] = (action[0] ? action[0] : "") + (reaction[0] ? reaction[0] : "");
+   result[1] = (action[1] ? action[1] : "") + (reaction[1] ? reaction[1] : "");
+   result[2] = (action[2] ? action[2] : "") + (reaction[2] ? reaction[2] : "");
+
+   result[3] = action[3];
+   result[4] = action[4];
+   return result;
+}

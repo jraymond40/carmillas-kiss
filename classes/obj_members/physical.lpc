@@ -1,0 +1,48 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    physical.c                                               \\
+//                                                                       \\
+// Description: Some physical attributes of this object.                 \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/13/93  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\  
+//                                                                       \\  
+//                                                                       \\  
+//=======================================================================\\
+*/
+
+#include <std_defs.h>
+
+private int weight;   /* Weight in kilograms       */
+private int height;   /* Measured in centimeters   */
+private int width;    /* Measured in centimeters   */
+private int depth;    /* Measured in centimeters   */
+private int volume;   /* Measured in centimeters^3 */
+private int form;     /* Gas, Liquid, Solid        */
+private int rigidity; /* Limp, Flexible, Rigid     */
+
+void set_weight   (int setting) { weight   = setting; }
+void set_height   (int setting) { height   = setting; }
+void set_width    (int setting) { width    = setting; }
+void set_depth    (int setting) { depth    = setting; }
+void set_volume   (int setting) { volume   = setting; }
+void set_form     (int setting) { form     = setting; }
+void set_rigidity (int setting) { rigidity = setting; }
+
+int query_weight()   { return weight;   }
+int query_height()   { return height;   }
+int query_width()    { return width;    }
+int query_depth()    { return depth;    }
+int query_form()     { return form;     }
+int query_rigidity() { return rigidity; }
+
+int query_volume()   
+{
+   if (volume) return volume;    
+   return (height * width * depth);
+}

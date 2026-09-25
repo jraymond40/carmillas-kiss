@@ -1,0 +1,96 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    misc_actions.c                                           \\
+//                                                                       \\
+// Description: Actions that don't actually effect other objects.        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 01/19/93  jmr  Original creation                                      \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+//                                                                       \\
+// dust                                                                  \\
+// wipe                                                                  \\
+// read                                                                  \\
+//                                                                       \\
+//=======================================================================\\
+*/
+
+#include <config.h>
+#include <std_defs.h>
+
+void init_actions()
+{
+   add_action("dust", "dust");
+   add_action("wipe", "wipe");
+   add_action("read", "read");
+}
+
+/* 
+// These actions have no actual interactions with other objects
+// in the world.
+// Their purpose is to paint the illusion and communication, with
+// out the overhead of creating actual objects to accompany them.
+*/
+dust(string str)
+{
+   object tp;
+   tp = this_player();
+
+   effect(LOCAL, tp,
+          "You reach out and dust the " + str + ".\n",
+          tp->query_cap_name() + " reaches over and dusts the " + str + ".\n");
+   return SUCCEED;
+}
+
+wipe(string str)
+{
+   object tp;
+   tp = this_player();
+
+   effect(LOCAL, tp,
+          "You kneel down, taking the handerchief from your pocket, and gently wipe " + str + ".\n",
+          tp->query_cap_name() + " kneels, taking a handkerchief from " 
+          + tp->query_possessive() + " pocket, and gently wipes " + str + ".\n");
+   return SUCCEED;
+}
+
+read(string str)
+{
+   object tp;
+   tp = this_player();
+
+   if (str == "Archdoxis")
+   {
+      effect(LOCAL, tp,
+             "You pull out a manuscript entitled \"Archdoxis XI\" and begin \n" +
+             "reading from it.\n",
+             this_player()->query_cap_name() + " pulls out a manuscript entitled \"Archdoxis XI\" and \n" +
+             "begins reading from it.\n");
+      return SUCCEED;
+   
+   }
+   return FAIL;
+}
+
+// To be implemented elsewhere, or later , or something... TBD
+int
+read(string read_str)
+{
+   if (!read_str) 
+   {
+      notify_fail("What shall I read?\n");
+      return FAIL;
+   }
+   else 
+   {
+      string *action_strs;
+      action_strs = ({"you read aloud", 
+              this_player()->query_cap_name() + " reads aloud"});
+      communicate(LOCAL, read_str, action_strs );
+      return SUCCEED;
+   }
+}   
+

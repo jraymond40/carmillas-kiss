@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Fugue"
+long_desc "Fugue is a musician and a computer programmer obsessed with his mortality."
+obj_type 4
+names ({"fugue","yourself","Fugue",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 32
+closed 1
+closable 1
+volume_contained 41850
+gender "male"
+name "fugue"
+human_type 2
+password "ABFdj8qhZdhEs"
+dflt_costume "Fugue"
+costume_names ({"Fugue",})
+costume_descriptions ({"Fugue is a musician and a computer programmer obsessed with his mortality.",})
+ticketholder_name "Fugue"
+total_usage 30324

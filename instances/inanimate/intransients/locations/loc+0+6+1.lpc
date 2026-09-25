@@ -1,0 +1,36 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+0+6+1.c                                              \\
+//                                                                       \\
+// Description: Guest Room #6.                                           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/05/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("Room #6");
+   set_long (
+      "A chair, bed and bureau are all that occupy this room. The only " + 
+      "things that counter it's sparseness are the flowers upon the "+ 
+      "bureau, and the window overlooking Karnstein.");
+
+   set_adjacent_locations(
+      ({ "loc+1+6+1"}),
+      ({ "east"}),
+      ({ "dr+0.5+6+1"}) );
+
+   set_intransient_list( 
+      ({"seat/chair/wooden", "bed/full-white", "bureau/guests", "window/west"}) );
+}

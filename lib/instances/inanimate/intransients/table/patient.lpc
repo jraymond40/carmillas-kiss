@@ -1,0 +1,47 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    template.c                                               \\
+//                                                                       \\
+// Description: The basic template used to create objects with.          \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/table";
+
+void
+create()
+{
+   table::create();
+
+   set_short        ("patient table");	// The name of this item.
+   set_long         ("A leather covered table, used to hold patients.");	
+
+   set_height       (110);		// cm.    
+   set_width        (60);		// cm.   
+   set_depth        (160);		// cm.   
+ 
+   set_manner_held  ("layed across it's leather surface");  
+}
+
+use(object tp, object recipient)
+{
+   if (!recipient)
+      return ( ({
+         ", then bring your feet up and lay back.",
+         ", then brings " + tp->query_possessive() + " feet up and lays back.",
+         ", then brings " + tp->query_possessive() + " feet up and lays back.",
+         "sit",
+         0,
+         "upon"}));
+   else return (table::use(tp, recipient));
+}
+

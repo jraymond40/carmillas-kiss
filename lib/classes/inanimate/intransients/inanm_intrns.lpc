@@ -1,0 +1,75 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    inanm_intrns.c                                           \\
+//                                                                       \\
+// Description: The inanimate, intransient class of objects.             \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/27/93  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+// initialize()                                                          \\
+//                                                                       \\
+//=======================================================================\\
+*/
+#include <std_defs.h>
+
+inherit "/classes/inanimate/inanimate";
+inherit "/classes/intransient";
+
+void
+create()
+{
+   inanimate::create();
+   intransient::create();
+}
+
+/*
+// These are the affordances ("to be able to do") that all intransient
+// objects have available.
+//
+// When using objects together, the object that is the recipient of 
+// the action is also called to find it's reaction. 
+//
+// By definition, STATIC and INTRANSIENT objects are of little use to the user
+// because they can neither be moved to an object, nor can they be 
+// used because the don't change, so handle those here.
+//
+// The other case of DYNAMIC INTRANSIENTS is usually handled at a higher level
+// in the inheritance tree, unless this is a burning intransient, in which case it's 
+// handeled down at the obj(flammable) level.
+*/
+
+string* 
+use(object user, object recipient)
+{
+   object agent;
+   string agent_name;
+   string recip_name;
+
+   agent = this_object();
+   agent_name  = specific_obj(agent);
+
+   // Pass of the dynamic objects.
+   if((int) agent->query_dynamacy() == DYNAMIC) 
+      return inanimate::use(user, recipient);
+
+   if (!recipient)
+   {
+      notify_fail("   Use " + agent_name + " with _what_?\n\n");
+      return FAIL; 
+   }
+
+   recip_name = specific_obj(recipient);
+
+   return({
+      ", but can't move " + agent_name + " to " + recip_name + ".",
+      ", but can't move " + agent_name + " to " + recip_name + ".",
+      ", but can't move " + agent_name + " to " + recip_name + ".",
+      "attempt",
+      "on",
+      "to use"});
+}

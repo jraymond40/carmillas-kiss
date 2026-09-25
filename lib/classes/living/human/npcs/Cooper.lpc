@@ -1,0 +1,425 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    Cooper.c                                                 \\
+//                                                                       \\
+// Description: An NPC-AI.                                               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/13/93  jmr  Original                                               \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+//                                                                       \\  
+//=======================================================================\\
+*/ 
+
+
+#include <config.h>
+#include <std_defs.h>
+#include <npc_defs.h>
+
+inherit "/classes/living/human/npcs/npc";
+
+
+object Oma;
+object Grandfeathers;
+object victim;
+
+string cue;
+string victim_location;
+string Grandfeathers_location;
+
+int    time_of_cue;
+int    active_sequence;
+
+
+initialize(object where)
+{
+   define_gender("male");
+   npc::initialize(where, "cooper");
+}
+
+
+catch_tell(string str)
+{
+   string *word;
+
+   word = explode(str, " ");
+
+   if (!Typhortet)           Typhortet = find_living("typhortet");
+
+   /* If this is a valid command string, extract all its parts. */
+   if (extract( word[0], 0, 2) == "*>[")
+   {
+      cue = extract( word[0], 3, 4);
+
+      /* Only valid cues are able to set variables & pre-empt previous cues */
+      if (cue == "A2" || cue == "A4" || cue == "AA" || 
+          cue == "B1" || cue == "B3" ||
+          cue == "D1" || cue == "D3" || cue == "D5" || cue == "DA" || cue == "DC")
+      {
+         /* Stop whatever we had planned to do next */ 
+         do{} while(remove_call_out("command") != -1);
+         time_of_cue = 0;
+
+         /* First cue sets all the important variables */   
+         if (cue == "A2" || cue == "B1")
+         {
+            victim_location = LOCATION_NUMBER(environment(Oma));
+            Grandfeathers_location = LOCATION_NUMBER(environment(Grandfeathers));
+         }
+
+         /* Do this cue at the next heartbeat */
+         set_heart_beat(ON);
+      }
+
+      /* In the event of an error */
+      else if (cue == "Z9")
+      {
+         /* Stop whatever we had planned to do next */ 
+         do{} while(remove_call_out("command") != -1);
+         set_heart_beat(OFF);
+         command("expressions: yell *>[say] Help! I can't perform my role - I'm confused!");
+      }
+      
+      else 
+      {
+         command("expressions: yell *>[say] I don't know the cue: " + cue + ".");
+      }
+
+   }
+   /* Other event capturing. */ 
+   else 
+   {
+   }
+   if (NPC_DEBUG) write_file(LOG_DIR + query_cap_name() + ".log", str);
+
+   return SUCCEED;
+}     
+
+
+heart_beat(string str)
+{
+   int time_now;
+
+
+   if (cue == "A2")
+   {
+      moveto(victim_location);
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma A3");
+   }
+   else if (cue == "A4")
+   {
+      time_now = time();
+
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+      }
+      /* Action! */
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 1) 
+      {  /* Takes MIN_RESPONSE_TIME sec (plus cueing time) to respond */
+         command("*>[say] But Oma, I did that when you asked earlier...");
+         moveto(Grandfeathers_location);
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 2) 
+      {  /* Takes MIN_RESPONSE_TIME * 1.4 sec */
+         command("*>[say] Grandfeathers, Grandfeathers... Oma needs you in the " + 
+                  environment(Oma)->query_short() + "!");
+         command("cue grandfeathers A5");
+         moveto("+2+0+0");
+         command("look doors");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         set_heart_beat(OFF);
+         active_sequence = 0;
+      }
+   }
+   else if (cue == "AA")
+   {
+      moveto(victim_location);
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma A9");
+   }
+   else if (cue == "B1")
+   {  
+      command("moveto " + victim_location);
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma B2");
+   }
+   else if (cue == "B3")
+   {  
+      command("*>[say] I don't know Oma... last I saw, he was trying to find his reading glasses, said he had some studying to do.");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma B4");
+   }
+
+   else if (cue == "D1")
+   {  
+      command("moveto " + LOCATION_NUMBER(environment(Oma)));
+      command("expressions: interrupt *>[say] Oma, found another case of wine... Burgundy, I'd guess.");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma D2");
+   }
+   else if (cue == "D3")
+   {  
+      command("expressions: nod");
+      cue = "";
+      set_heart_beat(OFF);
+      command("cue oma D4");
+   }
+   else if (cue == "D5")
+   {  
+      time_now = time();
+
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+      }
+      /* Action! */
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && 
+               active_sequence == 1) 
+      {
+         command("*>[say] Well, lets see...");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && 
+               active_sequence == 2) 
+      {
+         command("expressions: read *>[say] Contents: Yliastrum Elixir - a life extension plasma. " +
+                 "Uses: Life extension; instantaneous muscle and stamina building.");
+         command("cue Grandfeathers D6");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         set_heart_beat(OFF);
+         active_sequence = 0;
+      }
+
+   }
+   else if (cue == "DA")
+   {  
+      time_now = time();
+
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+      }
+      /* Action! */
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 1) 
+      {
+         command("*>[say] Well it does say: 'Warning: The effect of overdoses remains " + 
+                 "unstudied.'");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 2) 
+      {
+         command("expressions: read *>[say] It goes on,'The contents herein presented to the special " +
+                 "conference of Medical Academia of Europe. It's signed " +
+                 "Vividus, Paracelsus von Hohenheim.'");
+         command("cue Oma DB");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         set_heart_beat(OFF);
+         active_sequence = 0;
+      }
+   }
+   else if (cue == "DC")
+   {  
+      time_now = time();
+
+      if (time_of_cue == 0) 
+      {
+         /* set-up */
+         time_of_cue = time_now;
+         active_sequence = 1;
+      }
+      /* Action! */
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && 
+               active_sequence == 1) 
+      {
+         command("*>[say] Well, if you'll just follow me.");
+         effect(LOCAL, this_object(),
+            "You reach over and remove the ropes.\n",
+            "Junior reaches over and removes the ropes.\n");
+         environment(this_object())->add_exits();
+         command("move west");
+
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+              active_sequence == 2) 
+      {
+         command("*>[say] Everyone coming? Great.");
+
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 3) 
+      {
+
+         command("*>[say] This Chateau is thought to be originally built upon the site of a " +
+                 "structure built by the Babenberg family, around 1100... This way folks.");
+         command("move west");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 4) 
+      {
+
+         command("*>[say] at least thats what they figure from the stonework found in the " + 
+                 "cellar and here in the towers.");
+
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && 
+               active_sequence == 5) 
+      {
+
+         command("*>[say] Careful up the stairs here, they're rather steep.");
+         command("move up");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 6) 
+      {
+         command("*>[say] Later it fell into the hands of the Bohemians, who shortly there " +
+                 "after lost it in a war with the Habsburg family. The Habsburgs owned " +
+                 "all of Austria right up until the first World War.");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 7) 
+      {
+         command("*>[say] This way...");
+         command("move south");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 8) 
+      {
+         command("*>[say] During the early Habsburg rule it was built upon for the marriage " +
+                 "of a Habsburg daughters. However, she chose instead to elope with a " +
+                 "peasant, and the place stood gathering dust for many, many years.");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 9) 
+      {
+         command("*>[say] Then in 1540, Paracelsus, the great physician, was called upon by " +
+                 "Edward of Bavaria for a special cure. Paracelsus successfully cured " + 
+                 "the desperate Edward and was rewarded by both a promise of support " +
+                 "for his research, as well as a bride, Edwards niece of Habsburgian " +
+                 "descent, Carmilla Karnstein.");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && 
+               active_sequence == 10) 
+      {
+         command("look busts *>[say] In fact this room, and particularly this bust was created in honor " +
+                 "of Edwards kindness.");
+
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 11) 
+      {
+         command("*>[say] Over in this section of the gallery...");
+         command("move east");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 12) 
+      {
+         command("*>[say] ...you can see various Karnstein family members as well as " + 
+                 "Paracelsus himself.");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 13) 
+      {
+         command("expressions: smile *>[say] Hey, I'm remembering this pretty good... my grandparents and I " +
+                 "have only been here for a few months, and it's taken me a while but " +
+                 "I'm finally getting this part memorized!");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 14) 
+      {
+         command("move east");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 15) 
+      {
+         command("*>[say] And here, you see the last owner before we were awarded federal " +
+                 "funding to restore this chateau. Mircalla Karnstein, shown here in " +
+                 "this portrait apparently commited suicide. A great sorrow befell the " +
+                 "once great family, that later died out."); 
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME && active_sequence == 16) 
+      {
+         command("expressions: laugh *>[say] Some rumors had it that the schloss was haunted by Mircalla, " +
+                 "other rumors I heard from kids at school say a pack of blood thirsty " +
+                 "gypsies had moved into the place, stealing and eating the towns " +
+                 "children.");
+         command("expressions: smile");
+         time_of_cue = time_now;
+         active_sequence++;
+      }
+      else if (time_now >= time_of_cue + MIN_RESPONSE_TIME * 1.4 && active_sequence == 17) 
+      {
+         command("*>[say] Well, that's all I can remember... better find your own rooms.");
+
+         /* Cleanup after this cue's completion */
+         time_of_cue = 0;
+         cue = "";
+         set_heart_beat(OFF);
+         active_sequence = 0;
+      }
+   }
+   /* The section here is reserved for default actions. */
+   else 
+   {
+      command("expressions: yell *>[say] Heartbeat has no instructions for the cue: " + cue + ".");
+      cue = "";
+      set_heart_beat(OFF);
+   }
+   
+   return SUCCEED;
+}     

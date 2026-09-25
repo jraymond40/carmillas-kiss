@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Peteho"
+long_desc "A player named PeteHo."
+obj_type 4
+names ({"peteho","yourself","Peteho",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "peteho"
+human_type 2
+password "SK3P4XmGl14FA"
+dflt_costume "PeteHo"
+costume_names ({"PeteHo",})
+costume_descriptions ({"A player named PeteHo.",})
+ticketholder_name "PeteHo"
+total_usage 422

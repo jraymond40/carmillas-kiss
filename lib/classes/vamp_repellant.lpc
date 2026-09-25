@@ -1,0 +1,275 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    vamp_repellant.c                                         \\
+//                                                                       \\
+// Description: How repulsive is this object to a vampire?               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/28/93  jmr  Created                                                \\
+// 08/01/94  jmr  Rewrote                                                \\
+// 08/23/94  jmr  Added restart().                                       \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+
+#include <commons.h>
+#include <std_defs.h>
+//#define VAMP_REPELLANT_DEBUG
+#define HEAL_STAGE_DURATION 20 // 20 seconds between vampire scald healing stages
+
+private float vamp_repellant;
+private string *scald_str;
+private int     heal_stage;
+
+float  query_vamp_repellant()            { return vamp_repellant;    }
+void set_vamp_repellant(float setting)   { vamp_repellant = setting; }
+
+void
+restart()
+{
+   // Game resetting, no need to heal scalds.
+   while(remove_call_out("heal_scalding") != -1);
+}
+
+string* 
+use(object wieldor, object wieldee)
+{
+   string *str, *result, *wieldee_reaction;
+   string wieldor_name, wieldee_name, wielded_name;
+   object wielded;
+   int wieldor_hp, wieldee_hp, exp_diff;
+   int wieldor_exp, wieldee_exp;
+
+   result = ({"","","","",""});
+
+   wielded = this_object();
+   wielded_name = specific_obj(wielded);
+
+   if (!wieldee)
+   {
+      notify_fail("   Use " + wielded_name + " with _what_ ?\n");
+      return FAIL;
+   }
+
+
+   // We are only concerned with interactions between vamp_repelling items and vampires.
+   if ((int) wieldee->query_object_type() != LIVING || 
+       (int) wieldee->query_role() != VAMPIRE ||
+             vamp_repellant == 0)
+   return result;
+
+   wieldor_name = specific_obj(wieldor);
+   wieldee_name = specific_obj(wieldee);
+
+   wieldor_exp = (float) wieldor->query_hunter_exp();
+   wieldee_exp = (float) wieldee->query_vamp_exp();
+
+   wieldor_hp = (((int) wieldor->query_role() == INHALE) ? 50 : 0) +
+                 (wieldor_exp * 25) +
+                  (vamp_repellant * 25);
+   wieldee_hp = (((int) wieldee->query_role() == VAMPIRE) ? 33 : 0) +
+                 (wieldee_exp * 66);
+
+#ifdef VAMP_REPELLANT_DEBUG
+   write ("Hunter:  " + wieldor_name + "   exp:" + wieldor_exp + "   hp:" + wieldor_hp + "\n");
+   write ("Vampire: " + wieldee_name + "   exp:" + wieldee_exp + "   hp:" + wieldee_hp + "\n");
+#endif
+
+   if (random(2) < 1) result[3] = "wield";
+   else result[3] = "brandish";
+   if (random(2) < 1) result[4] = "at";
+   else result[4] = "towards";
+   wieldee_reaction = ({"", ""});
+   
+  // The wieldee_reaction is a function of experience and artifact power.
+   if (vamp_repellant < 0.333 * wieldee_exp)
+   {
+       wieldee_reaction[0] = " peers at " + wielded_name + ", obviously annoyed.";
+       wieldee_reaction[1] = " peer at " + wielded_name + ", obviously annoyed.";
+   } 
+   else if (vamp_repellant < 0.666 * wieldee_exp)
+   {
+       wieldee_reaction[0] = " is transfixed by " + wielded_name + 
+          ", repulsed yet unable to remove " + (string) wieldee->query_possessive() + 
+          " eyes from it.";
+       wieldee_reaction[1] = " are transfixed by " + wielded_name + 
+          ", repulsed yet unable to remove your eyes from it.";
+   }
+   else if (wieldor_hp > wieldee_hp) // This is a relatively powerful artifact on a losing vamp.
+   {
+      wieldee_reaction[0] = "'s flesh begins to smolder and sizzle as " + wielded_name + 
+         " reaches " + wieldee->query_possessive() + " forehead.";
+      wieldee_reaction[1] = "r flesh begins to smolder and sizzle as " + wielded_name + 
+         " reaches your forehead.";
+
+      // Scald the vamp w/ the artifact.
+      scald_str = ({
+         "recovering from a burn to the forehead",
+         "apparently been burned, as a mark on " + wieldee->query_possessive() + 
+            " forehead somewhat resembles " + generic_obj(wielded),
+         "exhibiting a nasty scald mark on " + wieldee->query_possessive() + 
+            " forehead in the shape of " + generic_obj(wielded)
+      });
+      heal_stage = 2;
+      wieldee->add_delta_adjective(scald_str[heal_stage]);
+      call_out("heal_scalding", HEAL_STAGE_DURATION, wieldee); // Vampires heal quickly.
+   }
+   else // A relatively powerful artifact used on a winning vamp.
+   {
+       wieldee_reaction[0] = " emits a roar of anger at the sight of " + wielded_name + ".";
+       wieldee_reaction[1] = " emit a roar of anger at the sight of " + wielded_name + ".";
+   }
+
+   // The Vamp_hunter wins
+   if (wieldor_hp > wieldee_hp)
+   {
+      exp_diff = wieldee_exp - wieldor_exp;
+      wieldor->inc_hunter_level();
+      // Max wieldee vamp_exp possible and still lose to a neophyte hunter: 63%
+
+      // Is the exploiter more experienced at this? Let it show.
+      if (exp_diff > 0.42)
+      {
+          result[0] =  
+          " You begin trembling tremendously as " +     
+          wieldee_name + wieldee_reaction[0] + "  Slowly, hesitantly, " +
+          wieldee_name + " begins to back away, as " + wieldee->query_possessive() + 
+          " energy begins to dissipate. Exhausted, but victorious, you nearly slump to the floor.";
+              
+          result[1] = 
+          capitalize(specific_obj(wieldor)) + " begins trembling tremendously as " +     
+          wieldee_name + wieldee_reaction[0] + "  Slowly, hesitantly, " +
+          wieldee_name + " begins to back away, as " + wieldee->query_possessive() + 
+          " energy begins to dissipate. Exhausted, but victorious, " +
+          wieldor_name + " nearly slumps to the floor.";
+                    
+          result[2] = 
+          capitalize(specific_obj(wieldor)) + " begins trembling tremendously as you" +     
+          wieldee_reaction[1] + "  Slowly, hesitantly, you begin to back away, as your " +  
+          "energy begins to dissipate. Exhausted, but victorious, " +
+          wieldor_name + " nearly slumps to the floor.";
+      }
+      if (exp_diff > 0.21)
+      {
+          result[0] = " Your hand quivers as " +     
+             wieldee_name + wieldee_reaction[0] + " " + wieldee_name + 
+             ", thwarted and energy draining, angrily pulls back. " + 
+             "Exhausted but pleased, you manage to muster a weak smile.";
+
+          result[1] = wieldor_name + " hand quivers as " +     
+             wieldee_name + wieldee_reaction[0] + " " + wieldee_name + 
+             ", thwarted and energy draining, angrily pulls back. " + 
+             "Exhausted but pleased, " + wieldor_name + 
+             " manages to muster a weak smile.";
+
+          result[2] = wieldor_name + " hand quivers as you" + wieldee_reaction[1] + 
+             " Thwarted, and your energy draining, you angrily pull back. " + 
+             "Exhausted but pleased, " + wieldor_name + 
+             " manages to muster a weak smile.";
+      }
+      else if (exp_diff > 0)
+      {
+          result[0] = " Concentration brings perspiration to your brow while " +              
+            wieldee_name + wieldee_reaction[0] + " " + wieldee_name + 
+            "'s energy waning, " + wieldee->query_pronoun() + " quickly draws back. " +
+            "Drained, yet confident, you smile.";
+
+          result[1] = " Concentration brings perspiration to " + wieldor_name + "'s brow while " + 
+             wieldee_name + wieldee_reaction[0] + " " + wieldee_name + 
+             "'s energy waning, " + wieldee->query_pronoun() + " quickly draws back. " +
+             "Drained, yet confident, " + wieldor_name + " smiles.";
+
+          result[2] = " Concentration brings perspiration to " + wieldor_name + "'s brow while you" +
+             wieldee_reaction[1] + " Your energy waning, quikly draw back. Drained, yet confident, " + 
+             wieldor_name + " smiles.";
+      }
+      else if (exp_diff > -0.21)
+      {
+           // The old hand at vamp hunting is so cool... 
+           result[0] = ". " + capitalize(wieldee_name) + wieldee_reaction[0] + " Coolly eyeing " + 
+              wieldee->query_objective() + ", " + wieldee->query_pronoun() + 
+              " suddenly recoils in fear, hissing like a cat as " + wieldee->query_possessive() + 
+              " energy drains.";
+
+           result[1] =  ". " + capitalize(wieldee_name) + wieldee_reaction[0] + " " + 
+              capitalize(wieldor_name) + " coolly eyes " + wieldee_name + ", as " + 
+              wieldee->query_pronoun() + " suddenly recoils in fear, hissing like a cat as " +
+              wieldee->query_possessive() + " energy drains.";
+
+           result[2] =  ". You" + wieldee_reaction[1] + " " + 
+              capitalize(wieldor_name) + " coolly eyes you, as you suddenly recoil in fear, a " + 
+              "cat-like hiss escaping your lips as your energy drains.";
+      }
+      else
+      {
+           // The old hand at vamp hunting is so cool... 
+           result[0] =  ". Staring steely eyed, you approach " + wieldee->query_objective() + ". " + 
+           wieldee->query_pronoun()  + wieldee_reaction[0] + " Instantly, " + wieldee_name + 
+           "lets out a horrid screech, covers " +  wieldee->query_possessive() + 
+           " head and cowers into the corner.";
+
+  
+           result[1] =  ". Staring steely eyed, " + wieldor_name + " approaches " +
+           wieldee->query_objective() + ". " + wieldee->query_pronoun()  + wieldee_reaction[0] + 
+           " Instantly, " + wieldee_name + "lets out a horrid screech, covers " +
+           wieldee->query_possessive() + " head and cowers into the corner.";
+
+           result[2] =  ". Staring steely eyed, " + wieldor_name + " approaches you. You" +
+           wieldee_reaction[0] + " Instantly, you let out a horrid screech, cover " +
+           "your head and cower into the corner.";
+
+      }
+
+      result[0] += "\n    Then, as if awakening from a trance, " + wieldee_name + 
+         " looks about the room, still slightly dazed. If " + wieldee->query_pronoun() + 
+         " had previously harbored any diabolical intentions, " + 
+         wieldee->query_pronoun() + " certainly doesn't appear to now.";
+
+      result[1] += "\n    Then, as if awakening from a trance, " + wieldee_name + 
+          " looks about the room, still slightly dazed. If " + wieldee->query_pronoun() + 
+          " had previously harbored any diabolical intentions, " + 
+          wieldee->query_pronoun() + " certainly doesn't appear to now.";
+
+      result[2] += "\n    Then, as if awakening from a trance, you " +  
+         "look about the room, still slightly dazed. The elixirs influence has been countered.";
+   }
+   else // The Vampire comes out on top.
+   {
+     exp_diff = wieldee_exp - wieldor_exp;
+      result[0] = ". " +
+      capitalize(specific_obj(wieldee)) + " calmly reaches over and crushes " +
+         wielded_name + " within " + wieldee->query_possessive() + 
+         " powerful grip.";
+      result[1] = ". " +
+      capitalize(specific_obj(wieldee)) + " calmly reaches over and crushes " +
+          wielded_name + " within " + wieldee->query_possessive() + 
+         " powerful grip.";
+      result[2] = 
+      ". You calmly reach over and crush " +
+         wielded_name + " in your powerful grip.";
+
+      call_out("remove", 2); // I guess they won't try _that_ again...
+   }
+
+   return result;
+}
+
+void
+heal_scalding(object wieldee)
+{
+   wieldee->remove_delta_adjective(scald_str[heal_stage]);
+   heal_stage--;
+ 
+   if (heal_stage > 0)
+   {
+      wieldee->add_delta_adjective(scald_str[heal_stage]);   
+      call_out("heal_scalding", HEAL_STAGE_DURATION, wieldee);
+      effect(LOCAL, wieldee, "Your burn is rapidly healing.",
+         "You notice the scald mark on " + specific_obj(wieldee) + 
+         "'s forehead is rapidly fading.");     
+   }
+   else
+      effect(LOCAL, wieldee, "Your burn has completely healed.");         
+}
+

@@ -1,0 +1,29 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    window-boarded1.c                                        \\
+//                                                                       \\
+// Description: The boarded over window of the Master bedroom.           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/30/93  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/window";
+
+void
+create()
+{
+   window::create();
+
+   set_long ("Running your hand across the wooded surface, you note the " +
+             "thoroughness with which it has been sealed, with no drafts " +
+             "coming through.");
+   set_closable(FALSE);
+}

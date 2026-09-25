@@ -1,0 +1,38 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    Grandfeathers.c                                          \\
+//                                                                       \\
+// Description: An NPC.                                                  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/26/93  jmr  Created                                                \\
+// 09/08/94  jmr  Rewrote to read in scripts and readied to go online.   \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+#include <config.h>
+#include <std_defs.h>
+#include <npc_defs.h>
+
+// Function prototypes
+public void initialize(object where);
+inherit "/classes/living/human/npcs/npc";
+
+public
+void
+create()
+{
+   set_transient_list( ({"key/master"}) );
+   npc::create();
+}
+
+public
+void
+initialize(object where)
+{
+   npc::initialize(where, "grandfeathers");
+   define_gender("male");
+   set_long( "Somewhat hunched over and slow moving, the old mans eyes " +
+      "twinkle with life.");
+}
+

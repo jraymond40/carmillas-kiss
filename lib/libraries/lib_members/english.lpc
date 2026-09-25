@@ -1,0 +1,411 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    english.c                                                \\
+//                                                                       \\
+// Description: Functions for returning the proper english terms.        \\
+//              As per the Longman Dictionary of American English, 1983. \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/10/93  jmr Created                                                 \\
+// 08/13/94  jmr Modified for non-negative number extract.               \\
+// 08/13/94  jmr Corrected special case test order in pluralize.         \\
+// 08/13/94  jmr Corrected pluralizes 'y' to 'ies' conversion.           \\
+// 08/13/94  jmr Added obj_list_phrase().                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include "/includes/english.h"  // Full include pathnames are required here since 
+#include "/includes/std_defs.h" // the std path isn't known to the engine yet.
+
+//
+// Function name: begins_w_vowel
+//
+// Description:   Tells if the first character is a vowel
+//
+// Arguments:     string: the word to check
+//
+// Returns:       int: TRUE if begins w/ a vowel, FALSE if not.
+//
+
+int begins_w_vowel(string str)
+{
+   string tmp;
+   string first_char;
+
+   tmp = extract(str, 0, 1);
+
+   first_char = lower_case(tmp);
+
+   if (first_char == "a" || first_char == "e" || first_char == "i" || first_char == "o" || first_char == "u")
+      return TRUE;
+
+   return FALSE;
+}
+
+
+//
+// Function name: pluralize
+//
+// Description:	  Change a noun in singularform to a noun
+//                in pluralform.
+//
+// Arguments:     str: The word to change
+//
+// Returns:       Word in plural form.
+//
+string pluralize(string str)
+{
+   string last_char, second_to_last_char;
+   int    strlength;
+    
+   strlength = strlen(str);
+   last_char = extract(str, strlength - 1);
+   second_to_last_char = extract(str, strlength - 2, strlength - 2);
+
+   if (str == "mouse")  return "mice";
+   if (str == "goose")  return "geese";
+   if (str == "tooth")  return "teeth";
+   if (str == "foot")   return "feet";
+   if (str == "man")    return "men";
+   if (str == "woman")  return "women";
+   if (str == "child")  return "children";
+   if (str == "deer")   return "deer";
+   if (str == "moose")  return "moose";
+   if (str == "sheep")  return "sheep";
+   if (str == "fish")   return "fish";
+   // Is there an instance where die (as in death) might come through here?
+   if (str == "die")    return  "dice";
+
+
+   switch (last_char)
+   {
+      case "s":
+      case "x":
+      case "h":
+         return str + "es";
+      case "y":
+         if (begins_w_vowel(second_to_last_char)) return (str + "s");
+         else return (extract(str,0, (strlength - 1) - 1) + "ies");
+
+      case "e":
+         if (second_to_last_char != "f") break;
+         str = extract(str, 0, -1);
+      case "f":
+          // For wolf, & fall through from 'e' for knife, wife, etc. 
+         return (extract(str, 0, -1) + "ves");
+   }
+
+   return str + "s";
+}
+
+
+//
+// Function name: how_many
+//
+// Description:   Return a string describing the number of objects
+//                using correct english and plurals (as much as we know).
+//                (ie. several cats, an eel, a dog, a dozen eggs, etc. )
+//
+// Arguments:     int: number_of_objects
+//                int: object_name (in SINGULAR form)
+//
+// Returns:       string: A string describing the number of objects
+//
+
+string how_many(int number_of_objects, string object_name)
+{
+   string str;
+
+   switch(number_of_objects)
+   {
+      case 0:
+         str = "no ";
+         break;
+      case 1: 
+         if ( begins_w_vowel(object_name) ) str = "an ";
+         else str = "a " ;
+         str = str + object_name;
+         return str;
+         break;
+      case 2:
+         str = "a couple ";
+         break;
+      case 3:
+         str = "a few ";
+         break;
+      case 4:
+         str = "several ";
+         break;
+      case 5:
+         str = "some ";
+         break;
+      case 6:
+         str = "half a dozen ";
+         break;
+      case 7:
+      case 8:
+         str = "a number of ";
+         break;
+      case 9:
+      case 10:
+         str = "quite a few ";
+         break;
+      case 11:
+         str = "numerous ";
+         break;
+      case 12:
+         str = "a dozen ";
+         break;
+      default:
+         str = "many ";
+         break;
+   }
+
+   return str + pluralize(object_name);
+}
+
+
+//
+// Function name: forms_of_Be
+//
+// Description:   Return the proper form of the helping verb "Be" 
+//                (ie. "is", "are", "were", "was", etc.) 
+//                based upon Person, Tense, & Form
+//
+// Arguments:     int: person 1ST_PERSON, 2ND_PERSON, or 3RD_PERSON
+//                int: tense  PAST, PRESENT, or FUTURE
+//                int: form SINGULAR or PLURAL
+//
+// Returns:       string: The proper form of "be" 
+//
+
+string forms_of_Be(int person, int tense, int form)
+{
+   if (tense == PAST)
+   {
+      if (form == SINGULAR)
+      {
+         switch(person)
+         {
+            case FIRST_PERSON:
+               return "was";
+               break;
+            case SECOND_PERSON:
+               return "were";
+               break;
+            case THIRD_PERSON:
+               return "was";
+               break;
+         }
+      }
+      else /* PLURAL */
+      {
+         return "were";
+      }
+   }
+   else if (tense == PRESENT)
+   {
+      if (form == SINGULAR)
+      {
+         switch(person)
+         {
+            case FIRST_PERSON:
+               return "am";
+               break;
+            case SECOND_PERSON:
+               return "are";
+               break;
+            case THIRD_PERSON:
+               return "is";
+               break;
+         }
+      }
+      else /* PLURAL */
+      {
+         return "are";
+      }
+   }
+   else /* tense = FUTURE  (not officially defined) */
+   {
+      return "will be";
+   }
+}
+
+//
+// Used when the reader has refered to this specific item,
+// and that there is only one - 
+// If the object is the player, return "yourself"
+// If a person,  return their name, else "the _object_".
+//
+string specific_obj(object obj)
+{
+   if (!obj) return FAIL;
+   else if (function_exists("query_human_type", obj))
+      return (string) obj->query_cap_name();
+   else return "the " + (string) obj->query_short();
+}
+
+//
+// Used when the user has not specifically refered to this 
+// item.
+//
+// If a person, return their name, else "a/an _object_".
+//
+string generic_obj(object obj)
+{
+   string str;
+
+   if (!obj) return FAIL;
+   else if (function_exists("query_human_type", obj))
+      return (string) obj->query_cap_name();
+   else str = how_many(1, (string) obj->query_short());
+   return str;
+}
+
+// Really the same rules as pluralize, so use it -
+// (except if someone gets "geesed"....)
+string
+add_s(string word)
+{
+   return pluralize(word);
+}
+
+string
+add_ed(string word)
+{
+   if (extract(word, 0, -1) == "e")
+      return word + "d";
+   else return word + "ed";
+}
+
+string
+add_ing(string word)
+{
+   string result;
+
+   if (extract(word, 0, -1) == "e")
+      result = (extract(word, 0, strlen(word) - 2) + "ing");
+   else result = word + "ing";
+   return result;
+}
+
+//
+// If the succeed flag is false, we want the negated version of this
+// verb.
+//
+string
+proper_present_tense_verb(string verb, int subject_group, int tense_form, int succeed)
+{
+   if (!succeed)
+   {
+      switch(random(3))
+      {
+         case 0:
+            return ("unsuccessfully " + proper_present_tense_verb ("try", 
+               subject_group, tense_form, SUCCEED) + " to " + verb);
+            break;
+         case 1:
+            return ("unsuccessfully " + proper_present_tense_verb ("attempt", 
+               subject_group, tense_form, SUCCEED) + " to " + verb);
+            break;
+         case 2:
+            return (proper_present_tense_verb ("fail", subject_group, 
+               tense_form, SUCCEED) + " to " + verb);
+            break;
+      } 
+   }
+   switch(tense_form)
+   {
+      case CONTINUOUS:
+         switch(subject_group)
+         {
+            case SUBJECT_ONE:
+            case SUBJECT_TWO:
+            case SUBJECT_THREE:
+               return add_ing(verb);
+         }
+
+      case SIMPLE:
+         switch(subject_group)
+         {
+            case SUBJECT_ONE:
+            case SUBJECT_TWO:
+               return verb;
+            case SUBJECT_THREE:
+               return add_s(verb);
+         }
+   }
+}
+
+//
+// Turn an array of objects into an english phrase.
+// (ie. "two birds of paradise, a sneaker, and a partridge
+//       in a pear tree".)
+//
+
+string 
+obj_list_phrase(object *list)
+{
+   int     i, index, list_size, total_unique_items;
+   int    *unique_item_qty;
+   string *unique_item_desc;
+   string  item_desc, str, tmp;
+
+   if (! list) return "";
+   list_size = sizeof(list);
+   if(list_size < 1) return "";
+
+   // Can't exceed this amount.
+   unique_item_qty  = allocate(list_size);
+   unique_item_desc = allocate(list_size);
+
+   // Create the list of what and how many of each unique item.
+   for (i = 0; i < list_size; i++)
+   {
+      if (!list[i]) continue;
+
+      // If it has a Cap name, use it.
+      item_desc = ( (string) list[i]->query_cap_name()  
+                  ? (string) list[i]->query_cap_name() 
+                  : (string) list[i]->query_short()   );
+
+      if (total_unique_items == 0)
+      {
+         unique_item_desc[0] = item_desc;
+         unique_item_qty[0] = 1;
+         total_unique_items = 1;
+      }
+      else 
+      {
+         index = member_array(item_desc, unique_item_desc);
+
+         // If already in our list, increase it's count.
+         if (index != -1)
+            unique_item_qty[index] = unique_item_qty[index] + 1;
+         else // Not in list, add a new one.
+         {
+            unique_item_desc[total_unique_items] = item_desc;
+            unique_item_qty[total_unique_items] = 1;
+            total_unique_items++;
+         }
+      }
+   } // End of looping thru objects.
+
+   // Construct the object list phrase here.
+   str = " ";
+   for (i=0; i<total_unique_items; i++)
+   {
+      tmp = how_many(unique_item_qty[i], unique_item_desc[i]);
+      str = str + tmp;
+      if (i == total_unique_items - 1)
+      {
+         if (i > 1) str = str + " ";
+         else return str;
+      }
+      else if (i == total_unique_items - 2 && total_unique_items > 1)
+         str = str + " and ";
+      else str = str + ", ";
+   }
+   return str;
+}

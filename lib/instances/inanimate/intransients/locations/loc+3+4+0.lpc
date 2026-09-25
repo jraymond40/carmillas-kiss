@@ -1,0 +1,37 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+4+0                                                \\
+//                                                                       \\
+// Description: The dining halls northeastern corner.                    \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/10/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("dining hall's northeast corner");
+   set_long (
+      "The dining hall, wrapped in walls of mahogany, sports a matching " + 
+      "dining table and chairs that fill the cavernous room. A candelabra " + 
+      "hangs from the four corners of the room illuminating it. A white " + 
+      "door in the northern wall leads to the ballroom, and another in " + 
+      "the eastern wall leads to the armory.");
+
+   set_adjacent_locations(
+      ({ "loc+3+3+0",  "loc+3+5+0",  "loc+4+4+0",  "loc+2+4+0" }),
+      ({ "north",      "south",      "east",       "west" }),
+      ({ "dr+3+3.5+0", "",           "dr+3.5+4+0", "" }) );
+
+   set_intransient_list( ({"candelabra/hanging-small"}) );
+}

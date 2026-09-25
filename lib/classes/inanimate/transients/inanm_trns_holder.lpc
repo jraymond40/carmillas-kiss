@@ -1,0 +1,45 @@
+//=======================================================================\\
+//                                                                       \\
+// Filename:    inanm_trns_holder.c                                      \\
+//                                                                       \\
+// Description: Inanimate, transient, holder object.                     \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 09/15/93  jmr  Created                                                \\
+// 09/25/94  jmr  Added restart()                                        \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+inherit "/classes/inanimate/transients/inanm_trns";
+inherit "/classes/holder";
+
+void 
+initialize(object where)
+{
+   inanm_trns::initialize(where);
+   holder::initialize(this_object());
+}
+
+void 
+remove()
+{
+   holder::remove();
+   inanm_trns::remove();
+}
+
+string 
+query_long()
+{
+   string str1, str2;
+   str1 = inanm_trns::query_long();
+   str2 = holder::query_long();
+   return (str1 + (str2 ? str2 : "") ); 
+}
+
+void 
+restart()
+{
+   holder::restart();
+   inanm_trns::restart();
+}
+

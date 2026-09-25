@@ -1,0 +1,34 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    competitor.c                                             \\
+//                                                                       \\
+// Description: Attributes of all competitors.                           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/28/93  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+
+inherit "/classes/living/human/competitor_members/energy";
+inherit "/classes/living/human/competitor_members/commons_role";
+inherit "/classes/living/human/competitor_members/vampire";
+inherit "/classes/living/human/competitor_members/hunter";
+inherit "/classes/living/human/competitor_members/victim";
+
+private nosave int time_of_login;
+
+int  query_age()  { return (time_of_login - time()); }
+void initialize() { time_of_login = time();          }
+void heart_beat() { vampire::check();                }
+
+void
+restart()
+{
+   commons_role::restart();
+   energy::restart();
+   vampire::restart();
+   hunter::restart();
+   victim::restart();
+}

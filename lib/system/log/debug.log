@@ -1,0 +1,19 @@
+caught: Error in loading object
+program: classes/holder.c, object: instances/inanimate/intransients/locations/loc+0+6+0 line 60
+'     heart_beat' in 'classes/living/human/npcs/Oma.c' ('classes/living/human/npcs/Oma#25')line 160
+'         moveto' in 'classes/living/human/npc_cmds.c' ('classes/living/human/npcs/Oma#25')line 98
+'      negotiate' in 'classes/living/human/npc_cmds.c' ('classes/living/human/npcs/Oma#25')line 136
+' action_handler' in 'classes/living/living.c' ('classes/living/human/npcs/Oma#25')line 94
+'selection_parse' in 'instances/actions/move.c' ('instances/actions/move')line 85
+'query_destination' in 'classes/inanimate/intransients/locations/location.c' ('instances/inanimate/intransients/locations/loc+0+5+0')line 166
+'     initialize' in 'classes/inanimate/intransients/locations/location.c' ('instances/inanimate/intransients/locations/loc+0+6+0')line 103
+'inanm_intrns_holder::initialize' in 'classes/inanimate/intransients/inanm_intrns_holder.c' ('instances/inanimate/intransients/locations/loc+0+6+0')line 36
+'holder::initialize' in '    classes/holder.c' ('instances/inanimate/intransients/locations/loc+0+6+0')line 75
+'load_object_list' in 'classes/inanimate/intransients/locations/location.c' ('instances/inanimate/intransients/locations/loc+0+6+0')line 43
+'inanm_intrns_holder::load_object_list' in '    classes/holder.c' ('instances/inanimate/intransients/locations/loc+0+6+0')line 60
+'          CATCH' in '    classes/holder.c' ('instances/inanimate/intransients/locations/loc+0+6+0')line 60
+restore_object(): Illegal file format.
+program: classes/obj.c, object: classes/living/human/users/players/player#285 line 126
+'  process_input' in 'system/ticketwindow.c' ('system/ticketwindow#284')line 472
+'    login_check' in 'system/ticketwindow.c' ('system/ticketwindow#284')line 278
+'        restore' in '       classes/obj.c' ('classes/living/human/users/players/player#285')line 126

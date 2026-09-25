@@ -1,0 +1,42 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    busts.c                                                  \\
+//                                                                       \\
+// Description: Busts in the bust gallery.                               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+   set_id        ( ({"busts"}) );	// How sicose finds this item.
+   set_short        ("busts");	// The name of this item.
+   // The in-depth description.
+   set_long         (
+      "Taking a closer look at the busts, you notice various members of " +
+      "the Karnstein family, as well as some of their related " +
+      "Hapsburgs, former owners of all of what is now known as Austria. " +
+      "One particularly large and elaborate bust is labeled 'Ernst of " +
+      "Bavaria'.");	
+   set_flammability (NONE);		// NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(0);  		// Sec. Burn duration in seconds 
+   set_weight       (40);		// Kg.  (although, it is intransient)
+   set_height       (33);		// cm.    
+   set_width        (25);		// cm.   
+   set_depth        (25);		// cm.   
+   set_form         (SOLID);		// GAS | LIQUID | SOLID
+   set_rigidity     (RIGID);		// RIGID | FLEXIBLE
+}

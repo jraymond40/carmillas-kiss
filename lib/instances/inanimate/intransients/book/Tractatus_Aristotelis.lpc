@@ -1,0 +1,34 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    book/Tractatus_Aristotelis.c                             \\
+//                                                                       \\
+// Description: Tractatus Aristotelis - On the cosmic influence on man.  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/26/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/book_intrns";
+
+void
+create()
+{
+   book_intrns::create();
+
+   set_id        ( ({"book,`Aristotelis'"}) );	// How sicose finds this item.
+   set_short        ("book entitled 'Tractatus Aristotelis'"); // The name of this item.
+
+   // The in-depth description.
+   set_long         (
+      "Flipping through the pages, you come across an interesting " + 
+      "quote:\"... The planets in man have a more powerful influence " + 
+      "than the heavenly bodies. See therefore that the light which is " + 
+      "in thee be not darkness.\"");	
+}

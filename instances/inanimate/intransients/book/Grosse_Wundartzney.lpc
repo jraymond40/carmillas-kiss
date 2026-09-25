@@ -1,0 +1,34 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    book/Grosse_Wundartzney.c                               \\
+//                                                                       \\
+// Description: Grosse Wundartzney - excellent surgical reference.      \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/26/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/book_intrns";
+
+void
+create()
+{
+   book_intrns::create();
+
+   set_id        ( ({"book,`Wundartzney'"}) );	// How sicose finds this item.
+   set_short        ("book, 'Der grosse Wundartzney'"); // The name of this item.
+
+   // The in-depth description.
+   set_long         ("Scanning through through the elegant handwritten " + 
+                     "pages, you find it's a book on surgery, obviously " +
+                     "very detailed. Perhaps a little too detailed, as " +
+                     "your stomache begins to turn at the sight of it's " +
+                     "intricate, albeit woodcut, illustrations.");	
+}

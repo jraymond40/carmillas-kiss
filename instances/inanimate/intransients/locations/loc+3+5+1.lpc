@@ -1,0 +1,32 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+5+1.c                                              \\
+//                                                                       \\
+// Description: Entrance to rooms #11 and #12.                           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/05/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("hall, outside rooms #11 & #12");
+   set_long (
+      "You're between room #11 to the west and #12 to the east. The hall " +
+      "continues north and south.");
+
+   set_adjacent_locations(
+      ({ "loc+3+4+1", "loc+3+6+1", "loc+4+5+1",  "loc+2+5+1"}),
+      ({ "north",     "south",     "east",       "west"}),
+      ({ "",          "",          "dr+3.5+5+1", "dr+2.5+5+1"}) );
+}

@@ -1,0 +1,293 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    navigate.c                                               \\
+//                                                                       \\
+// Description: These are the navigational functions for NPC's etc.      \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/21/93  jmr  Original                                               \\
+// 03/22/93  jmr  Added NPC navigation                                   \\
+// 05/22/93  jmr  Added action cueing to NPC's                           \\
+// 09/01/93  jmr  Modified to work w/ "locations"                        \\
+// 09/22/93  jmr  Seperated from master.                                 \\
+// 09/22/93  jmr  Modified for SiCoSe.                                   \\
+// 08/26/94  jmr  Modified to negotiate doors && set_max_eval.           \\
+// 08/27/94  jmr  Turned into a daemon.                                  \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\
+// Events:                                                               \\
+//     1. sicose -fmk_rt_tbl is run after adding new locations           \\
+//        to generate routing.tbl                                        \\
+//     2. at normal system startup, routing.tbl is loaded                \\
+//     3. during runtime, navigate can be called to return               \\
+//        the string of instructions to get from origin to dest.         \\
+//                                                                       \\
+//=======================================================================\\
+#include <config.h>
+#include <std_defs.h>
+
+#define NAVIGATE_DEBUG 1
+
+// Prototypes
+public  void   create();
+public  string query_route(string origin_num, string dest_num);
+public  void   make_routing_tbl();
+private string find_route(string origin, string destination);
+
+// Where the routing table is stored in memory.
+private string *idx;          // The index into the instruction list.
+private string *instructions; // The array of instructions from one point to another.
+
+// Load the pregenerated file into memory
+public
+void
+create()
+{
+   int entries;      // Number of entries in the routing table.
+   int file_idx;     // Our current reference point in the file
+   int i;
+   string len_str;
+
+   entries = file_idx = 0;
+   set_eval_limit(0); // Shutoff this test in Sicose.
+
+   if (file_size(NAVIGATE_OBJ + ".o") < 1)
+   {
+      write("Navigate Daemon: Unable to load routing table, generating one.\n");
+      make_routing_tbl();
+      save_object(NAVIGATE_OBJ); // Save a compiled copy for quicker reload
+   }
+   else if ( !restore_object(NAVIGATE_OBJ) ) 
+      write_file(ERROR_LOG, "Navigate Daemon: Unable to restore itself.\n");
+ 
+   set_eval_limit(STD_MAX_EVAL_LIMIT); // Okay, turn it back on.
+}
+
+public
+string 
+query_route(string origin_num, string dest_num)
+{
+   int index;
+
+   if (!origin_num || !dest_num || !idx || !instructions) return "";
+
+   index = member_array( origin_num+dest_num+"\n", idx);
+
+   if (index != -1) return instructions[index];
+#ifdef NAVIGATE_DEBUG
+   else write_file(ERROR_LOG, "Navigate Daemon: Locations " + 
+      origin_num + " or " + dest_num + " not found in routing table.\n");
+#endif   
+   return "";
+}
+
+//
+// find_route will find the quickest way to get from "origin" to
+// "destination", returning the instructions to do so, in a string.
+// origin and destination are specified in a string in the format of
+// +x+y+z or -x-y-z (or combinations thereof, ie +1+2-1)
+//
+// This function is a CPU hog, so it is run offline to generate
+// routing.tbl's - LUT's of instructions for getting from origin
+// to destination.
+//
+private
+string 
+find_route( string origin, string destination)
+{
+
+// These make for easier reading 
+#define CONNECTIONS 0  // The index to the adjacent locations to check for each
+                       // possible route.
+#define INSTRUCTIONS 1 // The index to the instructions to get to each of the
+                       // possible routes
+
+   mixed*  crnt_pos_routes; // A 2-D array containing connections & instructions
+                            // to each possible route that we are currently
+                            // working on. 
+   mixed*  next_pos_routes; // The next array of possible routes to work on.
+   string* connection_list; 
+   string* instructions_list;
+   string* already_checked; // The list of locations already checked.
+   string* str;
+   int     i,ii,iii;
+   int     checked;
+   int     route;
+   int     index;
+   int     num_crnt_routes;
+   int     num_next_routes;
+   int     num_already_checked;
+   int     num_locations;
+   int     err;
+   object  location;
+
+   instructions_list = allocate(MAX_NUM_DIRECTIONS);
+   connection_list = allocate(MAX_NUM_DIRECTIONS);
+   if (origin == destination) return ("\n");
+   else
+   {
+      // First off, find the max potential locations
+      // Since all locations reside in the location dir, the number of
+      // files in this directory will be >= the total number of locs. 
+      // Close enough for memory allocation purposes, anyway.          
+      num_locations = 
+         sizeof( get_dir(LOCATION_DIR + LOCATION_PREFIX + "*.c"));
+
+      /* I can't foresee the num of possible routes exceeding this: */ 
+      crnt_pos_routes = allocate(2);
+      crnt_pos_routes[0] = allocate(MAX_NUM_DIRECTIONS * num_locations);
+      crnt_pos_routes[1] = allocate(MAX_NUM_DIRECTIONS * num_locations);
+
+      next_pos_routes = allocate(2);
+      next_pos_routes[0] = allocate(MAX_NUM_DIRECTIONS * num_locations);
+      next_pos_routes[1] = allocate(MAX_NUM_DIRECTIONS * num_locations);
+
+     // Leave room for TBD locations that are referenced but not in 
+     // the directory. Set for worst case.
+     already_checked = allocate(num_locations * MAX_NUM_DIRECTIONS);  
+
+      already_checked[num_already_checked++] = 
+         LOCATION_PREFIX + origin;
+      crnt_pos_routes[CONNECTIONS][num_crnt_routes] = 
+         LOCATION_PREFIX + origin;
+      crnt_pos_routes[INSTRUCTIONS][num_crnt_routes++] = "";
+
+
+      do
+      {
+         // Cycle through the current possible routes 
+         for (route = 0; route < num_crnt_routes; route++)
+         {
+            // Load this location in, get it's connect list & throw it out again 
+            location = find_object(LOCATION_DIR + crnt_pos_routes[CONNECTIONS][route]);
+            if (!location)
+            {
+               err = catch(clone_object(LOCATION_DIR + crnt_pos_routes[CONNECTIONS][route]));
+
+               if (err != 0) // Well, it must not be a functioning location yet-
+               {             // So, never check this one again and skip it.
+                  already_checked[num_already_checked++] = crnt_pos_routes[CONNECTIONS][route];
+                  continue; 
+               }
+
+               else location = find_object(LOCATION_DIR + crnt_pos_routes[CONNECTIONS][route]);
+            }
+            // In certain cases, entrances and exits need to be made available from their
+            // starting state... this is why they have an add_exits() function.
+            // ie. the starting location is this way.
+            location->add_exits();
+            connection_list = (string *) location->query_adjacent_locations();
+            instructions_list = (string *) location->query_possible_directions();
+   
+            // Now, look at each adjacent location to determine if it is the   
+            // destination or failing that, at least a valid possible route. 
+            for (ii = 0; ii < sizeof(connection_list); ii++)
+            {
+
+               // If this adjacent location is the destination, return this route
+               if (connection_list[ii] == LOCATION_PREFIX + destination) 
+                  return (crnt_pos_routes[INSTRUCTIONS][route] + instructions_list[ii]);
+
+               // Okay the adjacent location isn't the destination, but it may     
+               // lead us to it.                                                  
+               // Have we checked the adjacent location as a potential route before? 
+               // If so, move onto checking the next adjacent location now            
+               for (iii = 0, checked = FALSE; 
+                    iii < num_already_checked && !checked; iii++)
+               {
+                  if (connection_list[ii] == already_checked[iii]) 
+                     checked = TRUE;
+               }
+               if (!checked)
+               {
+                  // Okay, it's a new potential route, so add it to our next list.
+                  // First record the room connections from here to there.        
+                  next_pos_routes[CONNECTIONS][num_next_routes] = connection_list[ii];
+
+                  next_pos_routes[INSTRUCTIONS][num_next_routes++] =  
+                     crnt_pos_routes[INSTRUCTIONS][route] + instructions_list[ii] + ",";
+
+                  // Okay we've checked it, put it into the already_checked pile 
+                  already_checked[num_already_checked++] = connection_list[ii];
+               }
+            }
+         } 
+         // Okay, we've checked the current routes and made a list of future   
+         // routes to check. So now lets make the future possible route list   
+         // the current possible route list, and start checking all over again.
+         str = crnt_pos_routes;
+         crnt_pos_routes = next_pos_routes;
+         num_crnt_routes = num_next_routes;
+         next_pos_routes = str;
+         num_next_routes = 0;
+      } 
+      while (num_crnt_routes != 0);
+      
+      // Well if we've made it to this point, you simply can't get there from here. 
+      return ("\n.");
+   }
+
+}
+
+//
+// This function generates a routing table so that NPC's can traverse 
+// the quickest way possible from one location to another.
+//
+// This is dependent upon location filenames fitting "loc+" | "loc-"
+//
+public
+void 
+make_routing_tbl()
+{
+   string file_prefix;
+   string *location_list;
+   string *dir;
+   int i, ii, iii;
+   int dir_size;
+   int num_locations;
+
+   write("Making routing table:\n\t NOTE: This function takes about 2 hours for\n" + 
+         "\t       a 70 location world.\n");
+
+   set_eval_limit(0); // Turn off Sicose's max evaluation test.
+
+   dir = get_dir(LOCATION_DIR+LOCATION_PREFIX+"*.c");
+   dir_size = sizeof(dir);
+
+   location_list = allocate(dir_size);
+
+   for (i = 0, ii = 0; i<dir_size; i++)
+   {
+      file_prefix = extract(dir[i], 0, 3);
+
+        // Assure it's really a location, it is if it fits loc+*.c | loc-*.c
+      if (file_prefix == LOCATION_PREFIX+"+" || file_prefix == LOCATION_PREFIX+"-") 
+         location_list[ii++] = extract(dir[i], 3, -3);         
+   }
+   num_locations = ii;
+
+   // Allocate for an entry for getting from every location
+   // to every other (but not itself).
+   idx = allocate (num_locations * (num_locations - 1));
+   instructions = allocate (num_locations * (num_locations - 1));
+
+   for (i = iii = 0; i < num_locations; i++)
+   {
+      for (ii = 0; ii < num_locations; ii++)
+      {
+         if (i == ii) continue; // No need  when origin = destination.
+#ifdef NAVIGATE_DEBUG
+         write("Finding route from " + location_list[i] + 
+               " to " + location_list[ii] + ".\n");
+#endif
+         idx[iii] =  location_list[i] + location_list[ii] + "\n";
+         instructions[iii++] = find_route(location_list[i], location_list[ii]);
+      }
+   }
+   // Okay, now find_route has loaded in every location, but has
+   // has not been initialized to load in all of their contents.
+   // So perhaps destruct them here in the future.
+}
+

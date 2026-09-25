@@ -1,0 +1,28 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    key/guest.c                                              \\
+//                                                                       \\
+// Description: A guest room key.                                        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 09/07/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+void initialize(object where, string num);
+inherit "/classes/inanimate/transients/key";
+
+void
+initialize(object where, string num)
+{
+   set_id ( ({"key,`#"+num+"'"}) );  // How Sicose find this item.
+   set_short ("guest room key, #" + num);
+   set_long  ("Made of brass, the number " +num+ " is engraved into it.");
+   set_key   (ROOM_KEY_STR+num);
+   key::initialize(where);
+}
+

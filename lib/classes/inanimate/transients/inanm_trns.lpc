@@ -1,0 +1,28 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    inanm_trns.c                                             \\
+//                                                                       \\
+// Description: Inanimate, transient object.                             \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 09/15/93  jmr  Created                                                \\
+// 08/25/94  jmr  Added restart                                          \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+
+inherit "/classes/transient";
+inherit "/classes/inanimate/inanimate";
+
+void
+create()
+{
+   transient::create();
+   inanimate::create();
+}
+
+void
+restart()
+{
+   remove();
+}

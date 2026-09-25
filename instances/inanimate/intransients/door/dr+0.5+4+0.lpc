@@ -1,0 +1,36 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    dr+0.5+4+0.c                                             \\
+//                                                                       \\
+// Description: The swinging doors to the kitchen.                       \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/09/94  jmr  Created                                                \\
+//                                                                       \\
+//================ Copyright 1994 ==== Raymond Interactive Theatre, Ltd.=\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/door";
+
+void
+create()
+{
+   door::create();
+
+   set_id        ( ({"doors"}) );	// How sicose finds this item.
+   set_short        ("pair of swinging doors");	// The full description of this item.
+
+   // The in-depth description.
+   set_long         (
+      "Each equipped with a small porthole, the swinging doors lead to " + 
+      "the kitchen.");
+
+   set_weight       (30);		// Kg.  (although, it is intransient)
+   set_width        (300);		// cm.   
+
+// Note, no lock defined for these doors.
+   set_aggregate(TRUE);              // These are door_s_, plural.
+}

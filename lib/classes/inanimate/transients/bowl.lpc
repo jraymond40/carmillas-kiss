@@ -1,0 +1,30 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    bowl.c                                                   \\
+//                                                                       \\
+// Description: Features common to all bowls.                            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/transients/dish";
+
+void 
+create()
+{
+   dish::create();
+
+   set_id ( ({"bowl"}) );
+
+   set_weight (0.5);    // Kg.  Objects weight.
+   set_height (15);   // cm.  These are looked at to see if the 
+   set_width  (30);   // cm.  potential object to be contained will
+   set_depth  (30);   // cm.  fit within.
+
+}

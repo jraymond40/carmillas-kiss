@@ -1,0 +1,16 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    dr+4+5.5+0.c                                             \\
+//                                                                       \\
+// Description: The door to the Juniors room.                            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//================ Copyright 1994 ==== Raymond Interactive Theatre, Ltd.=\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/door";

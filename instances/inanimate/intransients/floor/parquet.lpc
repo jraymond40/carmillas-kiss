@@ -1,0 +1,28 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    floor/parquet.c                                          \\
+//                                                                       \\
+// Description: The ballrooms wooden floor.                              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/03/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/floor";
+
+void
+create()
+{
+   floor::create();
+
+   set_long         (
+      "Flat blocks of hardwood, fitted next to each other, form geometric " + 
+      "patterns for the ballroom's floor.");
+}

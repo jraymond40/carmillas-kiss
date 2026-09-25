@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Siegfried"
+long_desc "A player named Siegfried."
+obj_type 4
+names ({"siegfried","yourself","Siegfried",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 58
+closed 1
+closable 1
+volume_contained 80150
+gender ""
+name "siegfried"
+human_type 2
+password "idAURtf8Ibwls"
+dflt_costume "Siegfried"
+costume_names ({"Siegfried",})
+costume_descriptions ({"A player named Siegfried.",})
+ticketholder_name "Siegfried"
+total_usage 16521

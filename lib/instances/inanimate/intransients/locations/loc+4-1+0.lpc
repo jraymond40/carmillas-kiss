@@ -1,0 +1,34 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+4-1+0.c                                              \\
+//                                                                       \\
+// Description: The base of the hidden stairwell.                        \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 06/30/94  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+*/
+
+#include "/std_defs.h"
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("base of the hidden stairwell");
+   set_long("You find yourself in the base of the stairwell behind " +
+            "the fireplace. The cobwebs are very thick here, and the " + 
+            "dust makes your eyes water. A set of very narrow, and very " + 
+            "steep stairs lead upward into darkness.");
+
+   set_adjacent_locations(({ "loc+4-1+1"}),
+                          ({ "up"}),
+                          ({ "" }) );
+   set_light(-1);
+}

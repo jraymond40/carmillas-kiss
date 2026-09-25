@@ -1,0 +1,41 @@
+// file: /system/MudOS_master.c
+
+#include "/includes/config.h"
+
+int valid_shadow(object ob)                  { return 1; }
+int valid_author(string name)                { return 1; }
+int valid_override(string file, string name) { return 1; }
+int valid_domain(string domain)              { return 1; } 
+int valid_socket(object eff_user, string fun, mixed *info) { return 1; }
+int valid_save_binaries(string file)         { return 1; }
+
+mixed compile_object(string file)      { return file;   }
+string domain_file(string str)         { return "root"; }
+string author_file(string str)         { return "root"; }
+string make_path_absolute(string file) { return file;   }
+
+
+//
+// When an error or kill signal is received, Sicose calls this routine to
+// log it. Being nosave, only Sicose and master can call this routine.
+//
+nosave void
+crash(string error, object command_giver, object current_object)
+{
+   int     i;
+   object *p;
+
+   efun::shout("\n\nDirector yells: CUT!... Clear the set, system going down now.\n\n");
+   
+   p = users();
+   for (i=0; i < sizeof(p); i++) p[i]->quit();
+
+   log_file(SHUTDOWN_LOG, "System shutdown: " + ctime(time()) +
+      ", error: " + error + "\n");
+
+   if (command_giver) 
+      log_file(SHUTDOWN_LOG, "this_player: " + file_name(command_giver) + "\n");
+
+   if (current_object) 
+      log_file(SHUTDOWN_LOG, "this_object: " + file_name(current_object) + "\n");
+}

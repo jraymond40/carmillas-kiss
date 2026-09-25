@@ -1,0 +1,69 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    admin.c                                                  \\
+//                                                                       \\
+// Description: The system administrator object.                         \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/19/93  jmr  Original                                               \\
+// 09/05/93  jmr  Modified for actual use.                               \\
+// 08/26/94  jmr  Modified for use w/ pgui.                              \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\
+// create()                                                              \\
+// initialize()                                                          \\
+// init_actions()                                                        \\
+//                                                                       \\
+//=======================================================================\\
+
+#include <config.h>
+#include <std_defs.h>
+
+
+// At some point I'd like to keep an administrators log, 
+// some time in the future...
+
+       inherit "/classes/living/human/users/players/player";
+// nosave inherit "/classes/living/human/users/admin/admin_members/debugging";
+//        inherit "/classes/living/human/users/admin/admin_members/maintenance";
+//        inherit "/classes/living/human/users/admin/admin_members/commons_cmds";
+//        inherit "/classes/living/human/users/admin/admin_members/super_cmds"; 
+
+public
+void
+create()
+{
+   player::create();
+   set_transient_list( ({"key/master"}) );
+}
+
+public
+void
+initialize(object where, string name)
+{
+   player::initialize(where, name);
+   set_human_type(ADMINISTRATOR);
+   set_long("An administrator - rather dull looking lot, they are.");
+
+//   commons_cmds::init_actions();
+//   debugging::init_actions();
+//   maintenance::init_actions();
+//   super_cmds::init_actions();
+
+}
+
+//void
+//init_actions()
+//{
+//   add_action("moveto", "moveto");
+//   add_action("cue", "cue");
+//   add_action("cutto", "cutto");
+//   add_action("end_cutto", "end_cutto");
+//}
+
+string instance_path(string str)
+{
+   return ADMIN_INSTANCE;
+}

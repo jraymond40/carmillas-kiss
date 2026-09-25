@@ -1,0 +1,46 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    rocker.c                                                 \\
+//                                                                       \\
+// Description: The rocking chair found in the sitting room.             \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/17/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/seat_intrns";
+
+void
+create()
+{
+   seat_intrns::create();
+
+   set_id        ( ({"chair"}) );
+   set_short        ("rocking chair");
+   set_long         ("Pointed towards the window, the rockers surface " +
+                     "is well worn by use.");
+
+   set_weight       (20);       // Rather pointless since it's immoveable.
+   set_height       (120);      // 1.2 M tall
+   set_width        (65);       // .65 M wide
+   set_depth        (100);      // 1 M long
+}
+
+use(object tp, object recipient)
+{
+   if (!recipient)
+      return ( ({
+         ", causing it to squeak, as you rock.",
+         ", causing it to squeak, as " + tp->query_pronoun() + " rocks.",
+         ", causing you to squeak, as " + tp->query_pronoun() + " rocks.",
+         "sit",
+         0,
+         "in"}));
+   else return (seat_intrns::use(tp, recipient));
+}

@@ -1,0 +1,315 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    expressions:.c                                           \\
+//                                                                       \\
+// Description: All interplayer expressions are handled here.            \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 02/21/93  jmr  Original                                               \\
+// 05/17/93  jmr  Added ability to speak with action.                    \\
+// 01/08/94  jmr  Modified for use w/ PGUI                               \\
+// 11/26/94  jmr  Removed mutter/philosophize/theorize/yell/read from mnu\\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+// Users actions:                                                        \\
+//                                                                       \\
+//=======================================================================\\
+*/
+#include <std_defs.h>
+
+inherit "/classes/living/communicate";
+
+//
+// User selected cmd0 and possibly said something.
+//
+int
+selected_cmd0(object tp, string said)
+{
+   // Say users lines (if there), but tell them they haven't told us what to
+   // express.
+
+   if (said!="") tp->say(said);
+   effect(LOCAL, tp,
+        " No expressions were exhibited because you need to use the right" +
+        " arrow -> to put the expression you'd like to exhibit onto the" +
+        " `DO:` line.");
+   return SUCCEED;
+}
+
+//
+// Upon selecting 'expressions:' show the list of available expressions
+//
+int
+setup_menu1(object tp)
+{
+   // Handle the expressions menu.
+   tp->menu1("EXPRESS", 
+   ({
+       "shout", 
+       "whisper",
+       "chuckle",
+       "frown", 
+       "gasp", 
+       "glare", 
+       "interrupt", 
+       "laugh", 
+       "mumble",
+       "nod", 
+       "scoff",
+       "smile", 
+       "scream", 
+       "sneeze", 
+       "wink",
+       "yawn", 
+   }) );
+   return SUCCEED;
+}
+   
+// Handle communication with actions.
+int
+selection_parse(string str, object tp)
+{
+   object  doee;
+   string *action, *action_strs;
+   string  actions, said, preposition, doee_name;
+   int     range, num_cmds, rndm, num_actions;
+
+   rndm = random(10);
+   action_strs = ({"", "", ""});
+   range = LOCAL;
+
+   // Merely cmd0 has been selected.
+   if (!str) 
+      return selected_cmd0(tp, "");
+
+   // Cmd0 and something said.
+   else if (sscanf(str, "*>[say] %s", said) > 0)
+      return selected_cmd0(tp, said);
+
+   num_cmds = sscanf(str, "%s *>[say] %s", actions, said);
+   if(!actions) actions = str;
+   action = explode(actions, " ");
+   num_actions = sizeof(action);
+
+   if (num_cmds > 1)
+   {
+      if (num_actions == 1)
+      {
+         // Say and do it.
+         switch(action[0])
+         {
+            case "shout" :
+            case "yell" : // Removed yell, and made it a synonym.
+               if (rndm > 5) action[0] = "yell";
+            case "scream" :
+               format_for_simple_verb(action[0], action_strs);
+               range = GLOBAL;
+               break;
+
+            case "mumble" :
+               if (rndm < 5) action[0] = "mutter";
+            case "mutter" :
+            case "whisper" :
+               if (rndm < 3) 
+                  format_for_simple_verb(action[0], action_strs);
+               else 
+               {
+                  action_strs[0] = "you " + action[0] + " under your breath"; 
+                  action_strs[1] = tp->query_cap_name() + " " + action[0] + 
+                     "s under " + tp->query_possessive() + " breath";
+               }
+               break;
+
+            default :
+               format_for_simple_verb(action[0], action_strs);
+               break;
+         }
+         communicate(range, said, action_strs);
+      }
+      else
+      {
+         // Direct this action toward someone.
+         if (action[1] == "yourself") doee = tp;
+         else doee = find_living(lower_case(action[1]));
+
+         if (tp != doee) doee_name = doee->query_cap_name();
+         else doee_name = tp->query_pronoun() + "self";
+
+         if (action[0] == "whisper")
+         {
+            effect(LOCAL, tp,
+               "\"" + said + "\", you whisper to " + 
+                  ( tp!=doee ? doee_name : "yourself") + ".\n",
+               tp->query_cap_name() + " leans over and whispers to " + 
+                  doee_name + ".\n",
+               doee,
+               "\"" + said + "\", " + tp->query_cap_name() + 
+                  " whispers to you.\n");
+         }
+         else 
+         {
+            switch(action[0])
+            {
+               case "interrupt" :
+                  preposition = " ";
+                  break;
+
+               case "philosophize" : // Removed for now (or forever).
+               case "theorize" :     // Ditto.
+                  preposition = " with ";
+                  break;
+
+               case "read" :
+                  preposition = " to ";
+                  break;
+
+               default :
+                  preposition = " at ";
+                  break;
+            }
+            action_strs[0] = "you " + action[0] + preposition + 
+                             ( tp!=doee ? doee_name : "yourself");
+            action_strs[1] = tp->query_cap_name() + " " +
+                             pluralize(action[0]) + preposition + doee_name;
+            action_strs[2] = tp->query_cap_name() + " " + pluralize(action[0])  
+                           + preposition + " you";
+            if (doee != tp) communicate(LOCAL, said, action_strs, doee);
+            else communicate(LOCAL, said, action_strs);
+         } 
+      }
+   }
+   else if (action[0] == "*>[menu1]") setup_menu1(tp);
+   else if (num_actions < 2)
+   {
+      // Nothing to say, just action.
+      switch(action[0])
+      {
+         case "yell" : // Actually no longer a choice, now just a synonym.
+         case "shout" :
+            if (rndm > 5) action[0] = "yell"; 
+         case "scream" :
+            action_strs[0] = "You " + action[0] + ".\n";
+            action_strs[1] = "You hear a " +  (string) tp->query_gender() +
+               " voice " + action[0] + "ing.\n";
+            range = GLOBAL;
+            break;
+         case "sneeze" :
+            if      (rndm < 4) said = "Achoooo!"; 
+            else if (rndm < 8) said = "ha... Ha... HA-Choooo!"; 
+            else               said = "achoo, achoo, HachooO!"; 
+            format_for_simple_verb("sneeze", action_strs);
+            communicate(LOCAL, said, action_strs); 
+            return SUCCEED;
+            break;
+
+         case "mumble" :
+            if (rndm < 3)
+            {
+               action_strs[0] = "You mumble under your breath.\n";
+               action_strs[1] = tp->query_cap_name() + " mumbles under " +
+                  tp->query_possessive() + " breath.\n";
+               break;
+            }
+            else if (rndm < 6)
+            {
+               action_strs[0] = "You begin mumbling.\n";
+               action_strs[1] = tp->query_cap_name() + " begins mumbling.\n";
+               break;
+            }
+            else action[0] = "mutter"; // Fall through as default.
+
+         default :
+            action_strs[0] = "You " + action[0] + ".\n", 
+            action_strs[1] = tp->query_cap_name() + " " + action[0] + "s.\n";
+            break;
+      }
+      effect(range, tp, action_strs[0], action_strs[1]);
+   }
+   else if (action[1] == "*>[menu2]")
+   {
+      // Handle the third menu (numbered 0-2).
+      switch(action[0])
+      {
+         // Those actions that don't need another menu.
+         case "mutter" :
+         case "sneeze" :
+         case "yawn" :
+            doupdate();
+            return SUCCEED;
+            break;
+
+         // We can interrupt someone (but not "at" them).
+         case "interrupt" :
+            tp->set_preposition(0, "");
+            tp->menu2("People", living_list(tp) );
+            break;
+
+         // We whisper "to" someone.
+         case "whisper" :
+            tp->set_preposition(4, "to");
+            tp->menu2("People", living_list(tp) );
+            break;
+
+         // The rest can be directed "at" someone.
+         default :
+            tp->set_preposition(4, "at");
+            tp->menu2("People", living_list(tp) );
+            break;
+      }
+   }
+   else
+   {
+      // Direct this action toward someone w/ nothing to say.
+      if (action[1] == "yourself") doee = tp;
+      else doee = find_living(lower_case(action[1]));
+
+      if (tp != doee) doee_name = doee->query_cap_name();
+      else doee_name = tp->query_pronoun() + "self";
+
+      switch(action[0])
+      {
+         case "*>[say]" :
+            // User didn't finish entering an expression.
+            notify_fail("Expression not fully selected.\n");
+            command(str);
+            return FAIL;
+            break;
+
+         case "interrupt" :
+            action_strs[0] = "You interrupt " + 
+                             (tp!=doee ? doee_name : "yourself") + ".";
+            action_strs[1] = tp->query_cap_name() + " interrupts " + 
+                             doee_name + ".";
+            action_strs[2] = tp->query_cap_name() + " interrupts you.";
+            break;
+
+         case "whisper" :
+            action_strs[0] = "You lean over as if to whisper to " + 
+                             (tp!=doee ? doee_name : "yourself") + ".";
+            action_strs[1] = tp->query_cap_name() + 
+                             " leans over as if to whisper to " + 
+                             doee_name + ".";
+            action_strs[2] = tp->query_cap_name() + 
+                             " leans over as if to whisper in your ear.";
+            break;
+
+         default :
+            action_strs[0] = "You " + action[0] + " at " +
+                             (tp!=doee ? doee_name : "yourself") + ".\n";
+            action_strs[1] = tp->query_cap_name() + " " + pluralize(action[0]) +
+                             " at " + doee_name + ".\n";
+            action_strs[2] = tp->query_cap_name() + " " + pluralize(action[0]) +
+                             " at you.\n";
+            break;
+      }
+      if (doee != tp)
+        effect(LOCAL, tp, action_strs[0], action_strs[1], doee, action_strs[2]);
+      else 
+        effect(LOCAL, tp, action_strs[0], action_strs[1]);
+   }
+   return SUCCEED;
+}
+

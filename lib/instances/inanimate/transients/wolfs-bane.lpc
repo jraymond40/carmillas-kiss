@@ -1,0 +1,47 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    wolfs-bane.c                                             \\
+//                                                                       \\
+// Description: Small yellow mountain flower, AKA wolf's-bane.           \\
+// History:                                                              \\
+//                                                                       \\
+// 08/29/93  jmr  Original creation                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+
+inherit "/classes/inanimate/transients/inanm_trns_vr";
+
+
+void 
+create()
+{
+   inanm_trns_vr::create();
+
+   set_id        ( ({"flower"}) );
+   set_short        ("mountain flower");
+   set_long         ("A small yellow mountain flower, commonly known as wolf's-bane.");
+   set_flammability (NONE);
+   set_burn_duration(0);
+
+   set_weight       (1);
+   set_height       (15);
+   set_width        (3);
+   set_depth        (4);
+   set_form         (SOLID);
+   set_rigidity     (FLEXIBLE);
+   set_vamp_repellant(0.40);
+}
+
+string
+query_long()
+{
+   set_id( ({"wolf's-bane"}) );
+   set_short("wolf's-bane" );
+   return (inanm_trns_vr::query_long());
+}
+
+

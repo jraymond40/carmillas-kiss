@@ -1,0 +1,28 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    dr+3.5+2+0.c                                             \\
+//                                                                       \\
+// Description: The doors between the ballroom and library.              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/31/94  jmr  Created                                                \\
+//                                                                       \\
+//================ Copyright 1994 ==== Raymond Interactive Theatre, Ltd.=\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/door";
+
+void
+create()
+{
+   door::create();
+
+   set_id( ({"door,oak"}) );
+
+   set_long         (
+      "Nicely varnished, the oak door provides access to and from the " + 
+      "library, and matches nicely with the ballroom floors.");
+}

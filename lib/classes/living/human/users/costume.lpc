@@ -1,0 +1,79 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    costume.c                                                \\
+//                                                                       \\
+// Description: Functions related to costuming.                          \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/15/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\
+//=======================================================================\\
+
+#include <std_defs.h>
+#include <config.h>
+
+private string dflt_costume;
+private string *costume_names;
+private string *costume_descriptions;
+
+int
+set_dflt_costume(string name)
+{
+   if (member_array(name, costume_names) == -1) return FAIL;
+   dflt_costume = name;
+   return SUCCEED;
+}
+
+int
+add_costume_name(string name)
+{
+   int size;
+   if (!name) return FAIL;
+   // If the name is not unique, then the order of things gets screwed.
+   // So assure before proceeding.
+   size = sizeof(costume_names);
+   costume_names = add_to_array(costume_names, name);
+   if ((costume_names) == size) return FAIL;
+   else return SUCCEED;
+}
+
+int
+add_costume_description(string description)
+{
+   int size;
+   if (!description) return FAIL;
+   // If the description is not unique, then the order of things gets screwed.
+   // So assure before proceeding.
+   size = sizeof(costume_descriptions);
+   costume_descriptions = add_to_array(costume_descriptions, description);
+   if ((costume_descriptions) == size) return FAIL;
+   else return SUCCEED;
+}
+
+int
+remove_costume(string name)
+{
+   int index;
+   if (!name) return FAIL;
+   index = member_array(name, costume_names);
+   if (index == -1) return FAIL;
+   costume_names = remove_from_array(costume_names, name);
+   costume_descriptions = remove_from_array(costume_descriptions, costume_descriptions[index]);
+   return SUCCEED;
+}
+
+
+string
+query_costume_description()
+{
+   return costume_descriptions[member_array(dflt_costume, costume_names)];
+}
+
+string
+query_dflt_costume()
+{
+   return dflt_costume;
+}

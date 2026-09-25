@@ -1,0 +1,37 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+0+5+0                                                \\
+//                                                                       \\
+// Description: The southern kitchen.                                    \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("cooking area of the kitchen");
+   set_long (
+      "A stove and underlying oven are in one corner and a refrigerator " + 
+      "is in the other. The area is set apart from the rest of the " + 
+      "kitchen by a counter. A southern doorway " + 
+      "with a curtain pulled across leads to the pantry.");
+
+   set_adjacent_locations(
+      ({ "loc+0+4+0", "loc+0+6+0"}),
+      ({ "north",     "south"}),
+      ({ "",          ""}) );
+
+   set_intransient_list( ({"appliance/stove", "appliance/refrigerator", 
+      "appliance/oven", "counter/cutting"}) );
+}

@@ -1,0 +1,42 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    players.c                                                \\
+//                                                                       \\
+// Description: Returns an array containing all players logged in.       \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/18/94  jmr                                                         \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+// object players()  Returns an array of players.                        \\
+//                                                                       \\
+//=======================================================================\\
+
+#include "/includes/config.h"  // Full include paths are required here since
+#include "/includes/std_defs.h"// the std path isn't known to the engine yet.
+
+
+object *
+players() 
+{
+   int     i, j;
+   object *players, *usrs, *return_list;
+
+   usrs = users();
+   players = allocate(sizeof(usrs));
+   for(i = j = 0; i < sizeof(usrs); i++)
+      if ((int) usrs[i]->query_human_type() == PLAYER)
+         players[j++] = usrs[i];
+
+   // Return an array that is exactly the same size as the 
+   // number of valid elements we have (not bigger than).
+
+   return_list = allocate(j);
+   for(i = 0; i < j; i++)
+      return_list[i] = players[i];
+ 
+   return return_list;
+} 
+

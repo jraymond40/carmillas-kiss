@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Captainwillard"
+long_desc "A shady character, with a piercing gaze."
+obj_type 4
+names ({"captainwillard","yourself","Captainwillard",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 8
+closed 1
+closable 1
+volume_contained 32838
+gender "male"
+name "captainwillard"
+human_type 2
+password "GQMmphNyS0QyY"
+dflt_costume "CaptainWillard"
+costume_names ({"CaptainWillard",})
+costume_descriptions ({"A shady character, with a piercing gaze.",})
+ticketholder_name "CaptainWillard"
+total_usage 4061

@@ -1,0 +1,39 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    paper.c                                                  \\
+//                                                                       \\
+// Description: Attributes of a common peice of writing paper.           \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/23/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/transients/inanm_trns";
+
+void
+create()
+{
+   inanm_trns::create();
+
+   set_id        ( ({"paper"}) );	// How sicose finds this item.
+   set_short        ("paper");		// The name of this item.
+
+   // The in-depth description.
+   set_long ("It appears to be a piece of writing paper.");
+	
+   set_flammability (MEDIUM);		//       NONE | LOW | MEDIUM | HIGH
+   set_burn_duration(30);  		// Sec. Burn duration in seconds 
+   set_weight       (0.1);		// Kg.  (although, it is intransient)
+   set_height       (4.3);		// cm.    
+   set_width        (3.5);		// cm.   
+   set_depth        (0.1);		// cm.   
+   set_form         (SOLID);		// GAS | LIQUID | SOLID
+   set_rigidity     (LIMP);		// RIGID | FLEXIBLE
+}

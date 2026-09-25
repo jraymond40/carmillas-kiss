@@ -1,0 +1,34 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    portrait-Carmilla.c                                      \\
+//                                                                       \\
+// Description: A portrait of Carmilla.                                  \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/24/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/picture";
+
+void
+create()
+{
+   picture::create();
+
+   set_id        ( ({"portrait"}) );	// How sicose finds this item.
+   set_short        ("portrait");	// The name of this item.
+
+   // The in-depth description.
+   set_long         (
+      "Words cannot adequately describe the beauty portrayed in the " +
+      "painting. The flowing coal black hair, the piercing gaze of her " +
+      "ebony eyes, the slight smile gracing full red lips against " +
+      "her pale, contrasting complexion.");
+}

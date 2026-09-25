@@ -1,0 +1,41 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    mirror-broken.c                                          \\
+//                                                                       \\
+// Description: The broken mirror attached to the                        \\
+//              vanity in the master suite.                              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 05/18/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1993 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+
+void
+create()
+{
+   inanm_intrns::create();
+
+   set_id        ( ({"mirrors"}) );
+   set_short        ("mirrors");
+   set_long (
+    "Looking into the yellowed and dusty glass slivers still in the " +
+    "frame, you finally find a single shard large enough to provide a " +    
+    "reflection of the master suite behind you.");
+
+   set_flammability (NONE);
+   set_burn_duration(0);
+   set_weight       (1000);   /* Rather pointless since it's immoveable */
+   set_height       (250);
+   set_width        (200);
+   set_depth        (7);
+   set_form         (SOLID);
+   set_rigidity     (RIGID);
+}

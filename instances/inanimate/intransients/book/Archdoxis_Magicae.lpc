@@ -1,0 +1,31 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    book/Archdoxis_Magicae.c                                 \\
+//                                                                       \\
+// Description: Archdoxis Magicae - On the use of seals and amulets.     \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 07/26/94  jmr  Created                                                \\
+//                                                                       \\
+//===================== Copyright 1994 ==== Raymond Interactive Theatre =\\
+*/
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/book_intrns";
+
+void
+create()
+{
+   book_intrns::create();
+
+   set_id        ( ({"book,`Magicae'"}) );	// How sicose finds this item.
+   set_short        ("book, 'Archdoxis Magicae'"); // The name of this item.
+
+   // The in-depth description.
+   set_long         ("The book apparently goes into great detail on the " + 
+                     "use of seals and amulets.");	
+}

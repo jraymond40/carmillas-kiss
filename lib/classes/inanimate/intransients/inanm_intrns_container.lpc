@@ -1,0 +1,60 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    inanm_intrns_container.c                                 \\
+//                                                                       \\
+// Description: Inanimate, intransient, container objects.               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/27/93  jmr  Original creation                                      \\
+// 08/23/94  jmr  Added restart()                                        \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\
+// initialize()                                                          \\
+// remove()                                                              \\
+// query_long()                                                          \\
+//                                                                       \\
+//=======================================================================\\
+
+#include <std_defs.h>
+
+inherit "/classes/inanimate/intransients/inanm_intrns";
+inherit "/classes/container";
+
+void
+restart()
+{
+   inanm_intrns::restart();
+   container::restart();
+}
+
+void
+create()
+{
+   inanm_intrns::create();
+   container::create();
+}
+
+void 
+initialize(object where)
+{
+   inanm_intrns::initialize(where);
+   container::initialize(this_object());
+}
+
+void 
+remove()
+{
+   container::remove();
+   inanm_intrns::remove();
+}
+
+string 
+query_long()
+{
+   string str1, str2;
+   str1 = inanm_intrns::query_long();
+   str2 = container::query_long();
+   return (str1 + (str2 ? str2 : "") ); 
+}

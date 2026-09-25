@@ -1,0 +1,26 @@
+#classes/living/human/users/players/player.c
+short_desc "Rafial"
+long_desc "The short, squat individual in the rumpled overcoat stares back at you.  He doesn't seem to blink much."
+obj_type 4
+names ({"rafial","yourself","Rafial",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+cumulative_weight 28
+closed 1
+closable 1
+volume_contained 16161
+gender "male"
+name "rafial"
+human_type 2
+password "rpAYzj7OSPSkc"
+dflt_costume "Rafial"
+costume_names ({"Rafial",})
+costume_descriptions ({"The short, squat individual in the rumpled overcoat stares back at you.  He doesn't seem to blink much.",})
+ticketholder_name "Rafial"
+total_usage 84814

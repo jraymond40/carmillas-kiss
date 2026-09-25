@@ -1,0 +1,35 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+3+5+0                                                \\
+//                                                                       \\
+// Description: The southeastern corner of the dining hall.              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/10/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("long hall");
+   set_long (
+      "You find yourself in the south eastern corner of the dining hall. " + 
+      "A door marked `Private' is set in the eastern wall, and an " + 
+      "overhead candelabra lights the area. ");
+
+   set_adjacent_locations(
+      ({ "loc+3+4+0",  "loc+4+5+0",  "loc+2+5+0" }),
+      ({ "north",      "east",       "west" }),
+      ({ "",           "dr+3.5+5+0", "" }) );
+
+   set_intransient_list( ({"candelabra/hanging-small"}) );
+}

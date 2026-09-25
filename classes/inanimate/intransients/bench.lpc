@@ -1,0 +1,29 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    bench.c                                                  \\
+//                                                                       \\
+// Description: The unmoveable bench.                                    \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/11/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/seat_intrns";
+
+void
+create()
+{
+   seat_intrns::create();
+
+   set_id        ( ({"bench"}) );
+   set_weight       (60);       // Rather pointless since it's immoveable.
+   set_height       (100);      // 1 M tall
+   set_width        (300);      // 3 M wide
+   set_depth        (50);       // .5 M long
+   set_max_bearable(600);
+}

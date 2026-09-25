@@ -1,0 +1,215 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    description.c                                            \\
+//                                                                       \\
+// Description: Programmer and user description of objects.              \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 03/06/93  jmr  Original                                               \\
+// 08/23/94  jmr  Added timed_d_adjectives & restart functions.          \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
+//                                                                       \\
+// Programmers functions:                                                \\
+//    set_id()           Sets the id of an object.                       \\
+//    query_id()         Returns the id of the object.                   \\
+//    id()               Returns TRUE if object is in string, used by    \\
+//                       the efun present().                             \\
+//                                                                       \\
+//=======================================================================\\
+
+#include <std_defs.h>
+#include <english.h>
+
+private string short_desc;
+private string long_desc;
+private int    obj_type;
+private string *names;
+private int    transiency;
+private int    dynamacy;
+private string *delta_adjectives;
+private int    aggregate;
+
+//
+// Restart - reset this object to it's state at game start.
+//           (faster and more efficient than destruct & re-create
+//            as long as all objects are thorough about it.)
+void
+restart()
+{
+   while( remove_call_out("add_delta_adjective") != -1 &&
+          remove_call_out("remove_delta_adjective") != -1 );
+
+   delta_adjectives = allocate(0);
+}
+
+/*
+// ID is the term Sicose uses to find the object.
+// Used by the presence() interpreter function to detect if an object
+// is contained within an object (inventory, place, etc.)
+*/
+void set_id(string *new_id) 
+{
+   if (!pointerp(new_id)) return;
+   names = new_id;
+}
+
+string *query_id()  { return names; }
+
+string query_primary_id() { return (names ? names[0] : ""); }
+
+int 
+id(string str) 
+{
+   if (names == 0 || member_array(str, names) == -1) return FALSE;
+   return TRUE;
+}
+
+/*
+// The following are utilized throughout to determine what type of
+// object we're refering to- see std_defs.h for the possible types.
+//
+*/
+void set_object_type(int type) { obj_type = type;  }
+int  query_object_type()       { return obj_type;  }
+ 
+void set_transiency(int type)  { transiency = type;}
+int  query_transiency()        { return transiency;}
+
+void set_dynamacy(int type)    { dynamacy = type;  }
+// For now objects are dynamic by default, unless otherwise specified.
+int  query_dynamacy()          { return (dynamacy == 0 ? DYNAMIC : dynamacy); }
+
+/*
+// 1) Long descriptions - Captialized & end w/ a "." (no "\n").
+//
+// 2) Short description - phrase w/out ".\n"
+//
+// 3) Object types, transiency, dynamacy - See std_defs.h
+*/
+void set_long(string str)     { long_desc = str; }
+void set_short(string str)    { short_desc = str;}
+
+string query_long() 
+{
+   object obj;
+   string str;
+   int    i;
+   int    list_size;
+
+   obj = this_object();
+   str = long_desc;
+   if (delta_adjectives) list_size = sizeof(delta_adjectives);
+   else list_size = 0;
+
+   switch(list_size)
+   {
+      case 0:
+         break;
+      case 1:
+         str += " " + capitalize((string) obj->query_pronoun()) + " " +
+         forms_of_Be(THIRD_PERSON, PRESENT, this_object()->query_aggregate()+1)
+         + " " + delta_adjectives[0] + ".";
+         break;
+      case 2:
+         str += " " + capitalize((string) obj->query_pronoun()) + " " +
+         forms_of_Be(THIRD_PERSON, PRESENT, this_object()->query_aggregate()+1)
+         + " " + delta_adjectives[0] + " and " + delta_adjectives[1] + ".";
+         break;
+      case 3:
+         str += " This " + obj->query_short() + " " +
+         forms_of_Be(THIRD_PERSON, PRESENT, this_object()->query_aggregate()+1)
+         + " " + delta_adjectives[0] + ", " + delta_adjectives[1] + 
+               ", and " + delta_adjectives[2] + ".";
+         break;
+      case 4:
+         str += " " + capitalize((string) obj->query_pronoun()) + " " +
+         forms_of_Be(THIRD_PERSON, PRESENT, this_object()->query_aggregate()+1)
+         + " " + delta_adjectives[0] + ", " + delta_adjectives[1] + ", and " +
+         delta_adjectives[2] + ", not to mention " +  delta_adjectives[3] + ".";
+         break;
+      case 5:
+         str += " " + capitalize((string) obj->query_pronoun()) + " " +
+         forms_of_Be(THIRD_PERSON, PRESENT, this_object()->query_aggregate()+1)
+         + " " + delta_adjectives[0] + ", " + delta_adjectives[1] + ", and " + 
+          delta_adjectives[2] + ". " + 
+         capitalize((string) obj->query_pronoun()) + " " +
+         forms_of_Be(THIRD_PERSON, PRESENT, this_object()->query_aggregate()+1)
+         + " also " + delta_adjectives[3] + " and " + delta_adjectives[4] + ".";
+         break;
+      default: // This is wrong for aggregates...
+         str += " This " + obj->query_short() + " has been through alot, " +
+                (string) obj->query_pronoun() + " " +
+         forms_of_Be(THIRD_PERSON, PRESENT, this_object()->query_aggregate()+1)
+         + " ";
+         for (i = 0; i < (list_size - 1); i++)
+            str += delta_adjectives[i] + ", ";
+         str += "and " + delta_adjectives[list_size] + ".";
+         break;
+   }
+   return str;  
+}
+
+string query_short() { return short_desc; }
+
+/*
+// The delta adjective list is a list of adjectives describing how 
+// this object is different from the standard cloned object -
+// is it lit, blood-stained, water-soaked?
+*/
+ 
+/* 
+// Return the ID of the adjective 'str'. 
+// If no ID found return -1
+*/
+int  query_delta_adjectives(string adjective) 
+{
+   if (delta_adjectives)
+   {
+      return member_array(adjective, delta_adjectives);
+   } 
+   else return -1;
+}
+
+/*
+// Add another adjective to our list.
+*/
+void add_delta_adjective(string adjective)
+{
+   delta_adjectives = add_to_array(delta_adjectives, adjective);
+}
+
+//
+// Remove a delta adjective from our list
+//
+void remove_delta_adjective(string adjective)
+{
+   delta_adjectives = remove_from_array(delta_adjectives, adjective);
+}
+
+// Add Timed Delta Adjective
+//
+// At 'start' seconds from now add delta adjective 'adjective'
+// and remove in start + duration seconds from now.
+//
+void
+add_timed_d_adjective(string adjective, int start, int duration)
+{
+   if(start == 0) add_delta_adjective(adjective);
+   else call_out("add_delta_adjective", start, adjective);
+   call_out("remove_delta_adjective", start + duration, adjective);
+}
+
+//
+// Is this an aggregate of objects?
+// (such as doors, etc?)
+//
+void set_aggregate(int flag) { aggregate = flag; }
+int  query_aggregate()       { return aggregate; }
+
+string query_pronoun()    { return (aggregate ? "they" : "it"); }
+string query_possessive() { return (aggregate ? "their" : "its"); }
+string query_objective()  { return (aggregate ? "they" : "it"); }
+
+

@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Drzero"
+long_desc "A player named DrZero."
+obj_type 4
+names ({"drzero","yourself","Drzero",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "drzero"
+human_type 2
+password "WDH08oMYArkzg"
+dflt_costume "DrZero"
+costume_names ({"DrZero",})
+costume_descriptions ({"A player named DrZero.",})
+ticketholder_name "DrZero"
+total_usage 10

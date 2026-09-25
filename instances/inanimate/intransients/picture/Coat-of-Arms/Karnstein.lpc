@@ -1,0 +1,32 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    Coat-of-Arms/Karnstein.c                                 \\
+//                                                                       \\
+// Description: The coat of arms found in the dining hall.               \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/04/94  jmr  Created                                                \\
+//                                                                       \\
+//============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. ==\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/picture";
+
+void
+create()
+{
+   picture::create();
+
+   set_id        ( ({"Coat-of-Arms"}) );// How sicose finds this item.
+   set_short        ("Karnstein Coat-of-Arms");	// The name of this item.
+
+   // The in-depth description.
+   set_long         (
+      "Upon the shield, a pair of crossed swords overlay an image of a " + 
+      "regal, open-winged, crimson dragon upon a sable field. Atop the " +
+      "swords lie a pair of crossed roses and " + 
+      "`Karnstein' is engraved across the bottom.");
+}

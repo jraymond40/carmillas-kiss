@@ -1,0 +1,16 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    key/master.c                                             \\
+//                                                                       \\
+// Description: The generic key.                                         \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/06/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/transients/key";

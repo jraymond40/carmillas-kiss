@@ -1,0 +1,153 @@
+/*
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    manipulate.c                                             \\
+//                                                                       \\
+// Description: functions for allowing the user to manipulate objects.   \\
+//                ie. opening, closing, using                            \\
+// History:                                                              \\
+//                                                                       \\
+// 08/10/93  jmr  Original creation                                      \\
+// 01/10/94  jmr  Modified for PGUI                                      \\
+//                                                                       \\
+//==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
+//                                                                       \\
+// init_actions()                                                        \\
+// manipulation_cmds()                                                   \\
+//                                                                       \\
+//=======================================================================\\
+*/
+
+#include <std_defs.h>
+#include <english.h>
+
+inherit "/classes/living/actions";
+
+int
+setup_menu1(object tp)
+{
+   // Handle the second menu (numbered 0-2).
+   tp->menu1("Objects", objects_list(tp, INANIMATE | TRANSIENT | 
+       INTRANSIENT | DYNAMIC, AND, INVENTORY | IMMEDIATE) );
+   return SUCCEED;
+}
+
+// Manipulate objects.
+int
+action_main(string str, string *prefix_strs, int present_tense_form)
+{
+   object  tp, direct_obj,  indirect_obj;
+   string *str_array, *result;
+   string *action_strs;
+   string  verb, verb2, direct_obj_name, preposition,  indirect_obj_name;
+   string  actions, said, tmp;
+
+   tp          = this_player();
+   if (!valid_action(tp)) return FAIL;
+
+   str_array   = explode(str, " ");
+   verb        = lower_case(query_verb());
+   action_strs = ({"", "", ""});
+    
+   if (sizeof(str_array) > 0)  direct_obj_name = lower_case(str_array[0]);
+   else  direct_obj_name = "";
+   if (sizeof(str_array) > 1)  indirect_obj_name = lower_case(str_array[1]);
+   else  indirect_obj_name = "";
+
+   // The direct and/or indirect_object may have left since the last menu 
+   // update (at least until we have auto menu updating).
+   if (! (direct_obj = locally_present( direct_obj_name, environment(tp)))  )
+   {
+      // Not around us, are we carrying it?
+      if (! (direct_obj = locally_present( direct_obj_name, tp))  )
+      {
+         notify_fail("   The '" + direct_obj_name + "' is no longer here.\n");
+         return FAIL;
+      }
+   }
+   if (indirect_obj_name != "")
+   {
+      // Is it an object w/ multiple uses?
+      if ((int) direct_obj->query_multiple_uses() ) 
+      {
+          return ((int) direct_obj->multiple_use(indirect_obj_name));
+      }
+      else
+      {
+         indirect_obj = locally_present( indirect_obj_name, environment(tp));
+
+         // Not around us, are we carrying it?
+         if (!indirect_obj &&
+             ! (indirect_obj = locally_present( indirect_obj_name, tp)) )
+         {
+            notify_fail("   The '" + indirect_obj_name + 
+               "' is no longer here.\n\n");
+            return FAIL;
+         }
+      }
+   }
+
+   if (indirect_obj && indirect_obj == direct_obj)
+   {
+      tmp = "You can't " + verb + " ";
+      tmp += (direct_obj == tp ? "yourself" : specific_obj(direct_obj));
+      tmp += " with ";
+      tmp += (direct_obj == tp ? "your" : direct_obj->query_objective());
+      tmp += "self.\n";
+      effect(LOCAL, tp, tmp);
+      return SUCCEED;
+   }
+
+   // Okay - all set, call the direct object.
+   if (function_exists(verb, direct_obj))
+   {
+      if (! (result = (string *) 
+         call_other( direct_obj, verb, tp, indirect_obj, preposition)) )
+         return FAIL;
+
+      if (result[3] && result[3] != "") verb = result[3];
+      if (indirect_obj && sizeof(result) > 4)
+         if (result[4] && result[4] != "") preposition = result[4];
+         else preposition = "with"; // Default preposition.
+      if (sizeof(result) > 5) verb2 = result[5];
+
+      effect(LOCAL, tp,
+         prefix_strs[0] + " " 
+         + proper_present_tense_verb(verb, SUBJECT_ONE, present_tense_form, SUCCEED)
+         + (verb2  && verb2 != "" ? " " + verb2 + " " : " ")
+         + (direct_obj == tp ? "yourself" : specific_obj(direct_obj))
+         + (preposition ? " " + preposition : "" ) 
+         + (indirect_obj ? (indirect_obj == tp ? "yourself" : " " 
+         + specific_obj(indirect_obj)) : "")
+         + (result[0] ? result[0] : ".") 
+         + "\n",
+         prefix_strs[1] + " " 
+         + proper_present_tense_verb(verb, SUBJECT_THREE, present_tense_form, SUCCEED)
+         + (verb2 && verb2 != "" ? " " + verb2 + " " : " ")
+         + (direct_obj == tp ? tp->query_objective() + "self" : 
+           specific_obj(direct_obj))
+         + (preposition ? " " + preposition : "" ) 
+         + (indirect_obj ? " " + (indirect_obj == tp ? tp->query_objective() 
+         + "self" : specific_obj(indirect_obj)) : "")
+         + (result[1] ? result[1] : ".") 
+         + "\n",
+         indirect_obj,
+         prefix_strs[2] + " " 
+         + proper_present_tense_verb(verb, SUBJECT_TWO, present_tense_form, SUCCEED)
+         + (verb2  && verb2 != "" ? " " + verb2 + " " : " ")
+         + (direct_obj == tp ? tp->query_objective() + "self" : 
+           specific_obj(direct_obj))
+         + (preposition ? " " + preposition : "" ) 
+         + (indirect_obj ? " you" : "")
+         + (result[2] ? result[2] : ".") 
+         + "\n");
+   }
+   else
+   {
+      if (said) tp->say(said);
+      notify_fail("   You attempt to " + verb + " " + specific_obj(direct_obj) 
+                + ", but are unable to.\n");
+      return FAIL;
+   }
+   return SUCCEED;
+}

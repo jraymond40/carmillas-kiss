@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Sasha"
+long_desc "A player named Sasha."
+obj_type 4
+names ({"sasha","yourself","Sasha",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "sasha"
+human_type 2
+password "qG9XDniTnqiZ2"
+dflt_costume "Sasha"
+costume_names ({"Sasha",})
+costume_descriptions ({"A player named Sasha.",})
+ticketholder_name "Sasha"
+total_usage 14

@@ -1,0 +1,24 @@
+#classes/living/human/users/players/player.c
+short_desc "Kosta"
+long_desc "A player named Kosta."
+obj_type 4
+names ({"kosta","yourself","Kosta",})
+transiency 32
+delta_adjectives ({})
+weight 75
+height 182
+width 38
+depth 38
+rigidity 2
+max_bearable 250
+closed 1
+closable 1
+gender ""
+name "kosta"
+human_type 2
+password "qlVqcWW9.hcuI"
+dflt_costume "Kosta"
+costume_names ({"Kosta",})
+costume_descriptions ({"A player named Kosta.",})
+ticketholder_name "Kosta"
+total_usage 4

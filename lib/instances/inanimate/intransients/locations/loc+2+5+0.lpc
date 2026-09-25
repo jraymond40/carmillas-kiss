@@ -1,0 +1,35 @@
+//=======================================================================\\
+//                                                                       \\  
+// Filename:    loc+2+5+0                                                \\
+//                                                                       \\
+// Description: The dining halls southern entrance.                      \\
+//                                                                       \\
+// History:                                                              \\
+//                                                                       \\
+// 08/09/94  jmr  Created                                                \\
+//                                                                       \\
+//=============== Copyright 1994 ==== Raymond Interactive Theatre, Ltd. =\\
+
+#include <std_defs.h>
+#include <config.h>
+
+inherit "/classes/inanimate/intransients/locations/location";
+
+void 
+create()
+{   
+   location::create();
+
+   set_short("dining hall's southern entrance");
+   set_long ("An immense mahogany dining table fills this room, elegantly " + 
+      "matching the mahogany covered walls. South from here is the southern " 
+      "staircase.");
+
+   set_adjacent_locations(
+      ({ "loc+2+6+0",   "loc+3+5+0", "loc+1+5+0"}),
+      ({ "south",       "east",      "west"}),
+      ({ "",            "",          ""}) );
+
+   set_intransient_list( 
+      ({"table/dining"}) );
+}
