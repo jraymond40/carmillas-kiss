@@ -51,22 +51,24 @@ void destruct_environment_of(object ob) {
     if (!interactive(ob))
 	return;
     tell_object(ob, "Everything you see is disolved. Luckily, you are transported somewhere...\n");
-    if (error = catch(ob->move_player("is transfered#room/void"))) {
-	write(error);
-	if (error = catch(move_object(ob, "room/void"))) {
-	    object new_player;
-
-	    write(error);
-	    new_player = clone_object("obj/player");
-	    if (!function_exists("replace_player", new_player)) {
-		destruct(new_player);
-		return;
-	    }
-	    exec(new_player, ob);
-	    if (error = catch(new_player->replace_player(ob, "room/void"))) {
+    error = catch(ob->move_player("is transfered#room/void"));
+    if (error) {
 		write(error);
-	    }
-	}
+		error = catch(ob->move("room/void"));	
+		if (error){
+			object new_player;
+
+			write(error);
+			new_player = clone_object("obj/player");
+			if (!function_exists("replace_player", new_player)) {
+			destruct(new_player);
+			return;
+			}
+			exec(new_player, ob);
+			if (error = catch(new_player->replace_player(ob, "room/void"))) {
+			write(error);
+			}
+		}
     }
 }
 
@@ -140,12 +142,12 @@ int valid_query_snoop(object wiz)               { return 1; }
 
 mixed prepare_destruct(object ob) {
     object super;
-    mixed *errors;
-    int i;
+    // mixed *errors;
+    // int i;
 
-#if 6 * 7 != 42 || 6 * 9 == 42
-    return "Preprocessor error";
-#endif
+// #if 6 * 7 != 42 || 6 * 9 == 42
+//     return "Preprocessor error";
+// #endif
 
     super = environment(ob);
     if (!super) {

@@ -19,3 +19,4 @@ inherit "/libraries/lib_members/libc";
 inherit "/libraries/lib_members/ctype";
 inherit "/libraries/lib_members/players";
 inherit "/libraries/lib_members/array";
+inherit "/libraries/lib_members/curses_emulation";

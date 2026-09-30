@@ -17,9 +17,9 @@ string make_path_absolute(string file) { return file;   }
 
 //
 // When an error or kill signal is received, Sicose calls this routine to
-// log it. Being nosave, only Sicose and master can call this routine.
+// log it. Being static, only Sicose and master can call this routine.
 //
-nosave void
+void
 crash(string error, object command_giver, object current_object)
 {
    int     i;
@@ -30,12 +30,12 @@ crash(string error, object command_giver, object current_object)
    p = users();
    for (i=0; i < sizeof(p); i++) p[i]->quit();
 
-   log_file(SHUTDOWN_LOG, "System shutdown: " + ctime(time()) +
+   write_file(SHUTDOWN_LOG, "System shutdown: " + ctime(time()) +
       ", error: " + error + "\n");
 
    if (command_giver) 
-      log_file(SHUTDOWN_LOG, "this_player: " + file_name(command_giver) + "\n");
+      write_file(SHUTDOWN_LOG, "this_player: " + file_name(command_giver) + "\n");
 
    if (current_object) 
-      log_file(SHUTDOWN_LOG, "this_object: " + file_name(current_object) + "\n");
+      write_file(SHUTDOWN_LOG, "this_object: " + file_name(current_object) + "\n");
 }

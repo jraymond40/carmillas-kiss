@@ -7,9 +7,9 @@
 //                                                                       \\  
 //-----------------------------------------------------------------------\\
 */
-#include "/includes/config.h"
+// #include "includes/config.h"
 
-void   log_error(string file, string message)                 { write_file(ERROR_LOG, message); }
+void   log_error(string file, string message)                 { write_file("ERROR_LOG", message); }
 int    valid_seteuid(object ob, string str)                   { return 1; }
 int    valid_write(string file, string eff_user, string func) { return 1; }
 int    valid_read(string file, string eff_user, string func, object obj)  { return 1; }
