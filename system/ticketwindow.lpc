@@ -115,24 +115,48 @@ void show_clock(int secs_remaining, int y, int x, string text) {
 }
 
 void clock() {
-    object dir = find_object(DIRECTOR_OBJ);
-    if (!dir) return;
+    // object dir = find_object(DIRECTOR_OBJ);
+    // if (!dir) return;
+
+    // if (boxoffice == CLOSED) {
+    //     if ((int)dir->query_accepting_players() == TRUE) {
+    //         boxoffice = OPEN;
+    //         welcome();
+    //     } else {
+    //         boxoffice = CLOSED;
+    //         show_clock(GAME_LENGTH - (int)dir->gametime() + 120, CLOSED_CLOCK_Y, CLOSED_CLOCK_X, CLOSED_STR);
+    //     }
+    // } else {
+    //     if ((int)dir->query_accepting_players() == FALSE) {
+    //         boxoffice = CLOSED;
+    //         show_in_progress();
+    //     } else {
+    //         boxoffice = OPEN;
+    //         show_clock((int)dir->seconds_until_showtime(), OPEN_CLOCK_Y, OPEN_CLOCK_X, OPEN_STR);
+    //     }
+    // }
+    object dir;
+    int secs = 0;
+
+    dir = find_object(DIRECTOR_OBJ);
+    if (!dir) {
+        catch(call_other(DIRECTOR_OBJ, "???"));
+        dir = find_object(DIRECTOR_OBJ);
+    }
 
     if (boxoffice == CLOSED) {
-        if ((int)dir->query_accepting_players() == TRUE) {
+        if (dir && (int)dir->query_accepting_players() == TRUE) {
             boxoffice = OPEN;
             welcome();
+            return;
         } else {
             boxoffice = CLOSED;
-            show_clock(GAME_LENGTH - (int)dir->gametime() + 120, CLOSED_CLOCK_Y, CLOSED_CLOCK_X, CLOSED_STR);
-        }
-    } else {
-        if ((int)dir->query_accepting_players() == FALSE) {
-            boxoffice = CLOSED;
-            show_in_progress();
-        } else {
-            boxoffice = OPEN;
-            show_clock((int)dir->seconds_until_showtime(), OPEN_CLOCK_Y, OPEN_CLOCK_X, OPEN_STR);
+            if (dir) {
+                secs = GAME_LENGTH - (int)dir->gametime() + 120;
+            } else {
+                secs = 120;
+            }
+            show_clock(secs, CLOSED_CLOCK_Y, CLOSED_CLOCK_X, CLOSED_STR);
         }
     }
 }
@@ -204,19 +228,33 @@ void welcome() {
 }
 
 void show_in_progress() {
-    clear();
-    debug_message("about to show contents of '"+INFO_DIR + "show_in_progress'\n");
-    string content = read_file(INFO_DIR + "show_in_progress");
-    debug_message(content + "\n");
-    if (content) {
-        string *lines = explode(content, "\n");
-        for (int i = 0; i < sizeof(lines) && i < term_rows - 3; i++) {
-            mvprintw(i, 0, lines[i]);
-        }
-    }
+    // clear();
+    // debug_message("about to show contents of '"+INFO_DIR + "show_in_progress'\n");
+    // string content = read_file(INFO_DIR + "show_in_progress");
+    // debug_message(content + "\n");
+    // if (content) {
+    //     string *lines = explode(content, "\n");
+    //     for (int i = 0; i < sizeof(lines) && i < term_rows - 3; i++) {
+    //         mvprintw(i, 0, lines[i]);
+    //     }
+    // }
+    // stage = STG_CLOSED;
+    // while (remove_call_out("clock") != -1);
+    // clock();
+    // prompt_next_input(0);
+    show_file(INFO_DIR + "show_in_progress");
     stage = STG_CLOSED;
+
+    mvprintw(21, 0, "  Type ? for information:\n");
+
     while (remove_call_out("clock") != -1);
     clock();
+    call_out("clock", CLOCK_UPDATE);
+
+    refresh();
+    move(21, 27);
+    refresh();
+
     prompt_next_input(0);
 }
 
