@@ -10,7 +10,7 @@
 // 09/22/93  jmr    Creation                                             \\
 //                                                                       \\
 //============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
-
+inherit "/libraries/lib_members/curses_emulation";
 inherit "/libraries/lib_members/effect";
 inherit "/libraries/lib_members/cue";
 inherit "/libraries/lib_members/english";
@@ -19,4 +19,3 @@ inherit "/libraries/lib_members/libc";
 inherit "/libraries/lib_members/ctype";
 inherit "/libraries/lib_members/players";
 inherit "/libraries/lib_members/array";
-inherit "/libraries/lib_members/curses_emulation";

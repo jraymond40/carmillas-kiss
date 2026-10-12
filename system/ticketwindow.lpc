@@ -1,9 +1,10 @@
 //=======================================================================\\
-//                                                                       \\  
+//                                                                       \\
 // Filename:    ticketwindow.c                                           \\
 //                                                                       \\
 // Description: The logon object, which passes control to the player,    \\
 //              administrator, or guest objects as required.             \\
+//              Modified to emulate curses via LPC & ANSI escapes.       \\
 //                                                                       \\
 // History:                                                              \\
 //                                                                       \\
@@ -12,723 +13,501 @@
 //                different user types.                                  \\
 // 12/01/93  jmr  Modified for PGUI                                      \\
 // 08/15/94  jmr  Readied for coming online.                             \\
+// 10/10/26  mod  Emulated curses terminal engine for modern FluffOS.    \\
 //                                                                       \\
 //============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
 //                                                                       \\
-// logon           This is called by the driver to login the new user.   \\
-//                                                                       \\
 //=======================================================================\\
+
+#pragma strict_types
+
+#include <config.h>
 #include "ticketwindow.h"
 
 void welcome();
 void info_menu();
 void show_in_progress();
+void ticketholder_prompt();
+void password_prompt();
+void process_input_line(string input_str);
 
-private nosave int    failed_attempts; // Failed login attempt count  
-private nosave string name;            // The users name                 
-private nosave string user_class;      // The type of user logged in     
-private nosave object user_obj;        // The object the caller will be 
-                                       // forwarded to.                 
-private nosave object new_user;        // Newly created player
-private nosave string str;            //
-private nosave string buf;             //
-private nosave string ch, tmp;         //
-private nosave mixed *key;             //
-private nosave int i, length, len;     // Initialize only once, instead of 
-private nosave int    stage;           // at each call to process_input 
-private nosave int    boxoffice;       // The open/closed status of the boxoffice 
+private nosave int    failed_attempts;
+private nosave string name;
+private nosave string user_class;
+private nosave object user_obj;
+private nosave object new_user;
+private nosave string buf;
+private nosave int    stage;
+private nosave int    boxoffice;
 
-void
-show_clock(int secs_remaining, int y, int x, string text)
-{
-   int min, sec;
-   string clock;
+/* --- Curses Emulation Screen Buffer --- */
+private nosave int    cursor_y = 0;
+private nosave int    cursor_x = 0;
+private nosave int    term_rows = 24;
+private nosave int    term_cols = 80;
+private nosave string *screen_buffer;
 
-   min = secs_remaining/60;
-   sec = secs_remaining - (min * 60);
-   clock = text + (min < 10 && min > 0 ? "0" + min: min) + ":" + 
-           (sec < 10 && min > 0 ? "0" + sec : sec);
-
-   mvprintw(y, x, clock);
-   refresh();
+/*
+ * Curses Emulation Primitives
+ */
+void clear() {
+    screen_buffer = allocate(term_rows, (: sprintf("%-*s", term_cols, " ") :));
+    cursor_y = 0;
+    cursor_x = 0;
 }
 
-void
-clock()
-{
-   if (boxoffice == CLOSED) 
-   {
-      // Open window if time, else display time until box_office opens.
-      if ((int) (find_object(DIRECTOR_OBJ)->query_accepting_players()) == TRUE)
-      {
-         boxoffice = OPEN;
-         welcome();
-      }
-      else
-      {
-         boxoffice = CLOSED;
-         show_clock( GAME_LENGTH - (int) (find_object(DIRECTOR_OBJ)->gametime()) + 120,
-            CLOSED_CLOCK_Y, CLOSED_CLOCK_X, CLOSED_STR);
-      }
-   }
-   else
-   {
-      // Close window if time, else display time until show begins.
-      if ((int) (find_object(DIRECTOR_OBJ)->query_accepting_players()) == FALSE)
-      {
-         boxoffice = CLOSED;
-         show_in_progress();
-      }
-      else
-      {
-         boxoffice = OPEN;
-         show_clock( (int) (find_object(DIRECTOR_OBJ)->seconds_until_showtime()),
-            OPEN_CLOCK_Y, OPEN_CLOCK_X, OPEN_STR);
-      }
-   }
-//   call_out("clock", CLOCK_UPDATE); // Auto-update the clock every n seconds // disabled
+void move(int y, int x) {
+    if (y >= 0 && y < term_rows) cursor_y = y;
+    if (x >= 0 && x < term_cols) cursor_x = x;
 }
 
-void
-press_any_key()
-{
-   mvprintw(20, 0,
-      "                                                                               ");
-   mvprintw(21, 0,
-      "     < Press any key to continue. >                                           ");
-   mvprintw(22, 0,
-      "                                                                               ");
-   while(remove_call_out("clock") != -1); // Make sure there's no others running.
-   clock();
+varargs void mvprintw(int y, int x, string str, mixed a1, mixed a2, mixed a3, mixed a4) {
+    if (a1) {
+        str = sprintf(str, a1, a2, a3, a4);
+    }
+    move(y, x);
+    if (cursor_y >= term_rows) return;
+
+    string line = screen_buffer[cursor_y];
+    int len = strlen(str);
+
+    if (cursor_x + len > term_cols) {
+        len = term_cols - cursor_x;
+        if (len < 0) len = 0;
+        str = str[0..len - 1];
+    }
+
+    screen_buffer[cursor_y] = line[0..cursor_x - 1] + str + line[cursor_x + len..];
+    cursor_x += len;
+    write(implode(screen_buffer, "\n"));
 }
 
-// Who's in the theatre?
-whos_in()
-{
-   object *player;
-   int x, y, z;
-   player = players();
-   clear();
-   mvprintw(0,0, "Characters currently in the theatre:\n" +
-                 "====================================\n");
-   for (y = 0, x = 0, z = 0; z < sizeof(player); y++, x++, z++)
-   {
-      if (x > 2) x = 0;
-      mvprintw(to_int((y/3) + 0.1) + 3, x * 12, player[z]->query_cap_name());
-   }
-   press_any_key(); // (includes refresh)
-   stage = STG_INFO_MENU;
+varargs void printw(string str, mixed a1, mixed a2, mixed a3, mixed a4) {
+    mvprintw(cursor_y, cursor_x, str, a1, a2, a3, a4);
 }
 
-void
-password_prompt()
-{
-   mvprintw(PASSWORD_PROMPT_Y, 0, 
-      "Password:                                                                       ");
-   move(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X);
-   refresh();
+void refresh() {
+    string out = CURS_HOME;
+    for (int r = 0; r < term_rows; r++) {
+        out += CURS_MOVE(r + 1, 1) + screen_buffer[r];
+    }
+    // Park hardware cursor at logical cursor coordinate (1-indexed)
+    out += CURS_MOVE(cursor_y + 1, cursor_x + 1);
+    tell_object(this_object(), out);
 }
 
-// Greet our users, and prompt for login.
-void 
-ticketholder_prompt()
-{
-   mvprintw(TICKETHOLDER_PROMPT_Y, 0, 
-      "Ticket Holder:                                    " +
-      "                              ");
-   // Cleanup the line below in the event we'd had a passwd line before.
-   mvprintw(PASSWORD_PROMPT_Y, 0, 
-      "                                                  " +
-      "                             ");   
-   move(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X);
-   refresh();
+void raw()   { /* FluffOS handles raw socket stream */ }
+void noecho() { /* Controlled via input_to() flag */ }
+void scrollok(mixed win, int flag) { /* Virtual screen buffer handles boundary checks */ }
+
+/*
+ * Clock & Theater State
+ */
+void show_clock(int secs_remaining, int y, int x, string text) {
+    int min, sec;
+    string clock_str;
+
+    min = secs_remaining / 60;
+    sec = secs_remaining % 60;
+    clock_str = sprintf("%s%02d:%02d", text, min, sec);
+    mvprintw(y, x, clock_str);
+    refresh();
 }
 
-void
-welcome()
-{
-   clear(); 
-   cat(INFO_DIR + "welcome");
-   while(remove_call_out("clock") != -1); // Make sure there's no others running.
-   clock();
-   ticketholder_prompt();
-   stage = STG_LOGIN;
+void clock() {
+    object dir = find_object(DIRECTOR_OBJ);
+    if (!dir) return;
+
+    if (boxoffice == CLOSED) {
+        if ((int)dir->query_accepting_players() == TRUE) {
+            boxoffice = OPEN;
+            welcome();
+        } else {
+            boxoffice = CLOSED;
+            show_clock(GAME_LENGTH - (int)dir->gametime() + 120, CLOSED_CLOCK_Y, CLOSED_CLOCK_X, CLOSED_STR);
+        }
+    } else {
+        if ((int)dir->query_accepting_players() == FALSE) {
+            boxoffice = CLOSED;
+            show_in_progress();
+        } else {
+            boxoffice = OPEN;
+            show_clock((int)dir->seconds_until_showtime(), OPEN_CLOCK_Y, OPEN_CLOCK_X, OPEN_STR);
+        }
+    }
 }
 
-void
-show_in_progress()
-{
-   clear(); 
-   cat(INFO_DIR + "show_in_progress");
-   stage = STG_CLOSED;
-   while(remove_call_out("clock") != -1); // Make sure there's no others running.
-   clock(); // handles refresh()
+void prompt_next_input(int hidden_echo) {
+    input_to("process_input_line", hidden_echo ? 1 : 0);
 }
 
-//
-// After so long of inactivity, or once logged in, destruct this object
-// and the user object if loaded in.
-//
-void
-timeout(object *objs)
-{
-   int x;
-   
-   if (failed_attempts >= MAX_FAILURES)
-   {
-      move(TICKETHOLDER_PROMPT_Y - 1, 0);
-      effect(INDIV, objs[0], "You seem to be having difficulties.\nPlease contact us at " + 
-         RIT_VOICE_PHONE + "\n or " + RIT_EMAIL_ADDRESS + " if they persist.");
-      write_file(LOG_DIR+"failed_login.log", 
-         "Failed login attempt from " + query_ip_number() + " at " + ctime(time()) + "\n");
-   }
-   else effect(INDIV, objs[0], "\nInactivity Timeout: ");
-   while(remove_call_out("clock") != -1); // Make sure the clock's killed.
-   while(remove_call_out("timeout") != -1); // Make sure the timeout's killed.
-   for (x = 0; x < sizeof(objs); x++)
-      if (objs[x]) destruct(objs[x]);
+void press_any_key() {
+    mvprintw(20, 0, "                                                                               ");
+    mvprintw(21, 0, "     < Press [Enter] to continue. >                                           ");
+    mvprintw(22, 0, "                                                                               ");
+    while (remove_call_out("clock") != -1);
+    clock();
+    prompt_next_input(0);
 }
 
-void 
-switch_to_user()
-{
-   int    res;
-   object loc;
+void whos_in() {
+    object *plist;
+    int x, y, z;
 
-   loc = find_object(STARTING_LOCATION);
-   if (!loc)
-   {
-      string err;
-      err = catch(call_other(STARTING_LOCATION, "???"));
-      if (err)
-      { 
-         if (TICKETWINDOW_DEBUG)
-            write("** Fatal error :" + err + 
-              " unable to load starting location: " + STARTING_LOCATION + "\n");
-         write_file(ERROR_LOG, "ERROR: " + err + 
-              ": logon.c unable to load starting location: " + 
-              STARTING_LOCATION + "\n");
-         shutdown();
-      }
-      loc = find_object(STARTING_LOCATION);
-   }
-   press_any_key();
-   if (user_class == GUEST) user_obj->initialize(loc, this_object() );
-   else user_obj->initialize(loc, name);
-   res = exec(user_obj, this_object());
-   user_obj = (object) NULL; // Set this to null, so it too isn't destructed at timeout.
-   // Only guests need the ticketwindow.
-   if (user_class != GUEST) timeout( (({this_object()})) );
-   else while (remove_call_out("timeout") != -1);
-   return;
+    plist = users();
+    clear();
+    mvprintw(0, 0, "Characters currently in the theatre:\n====================================\n");
+
+    for (y = 0, x = 0, z = 0; z < sizeof(plist); y++, x++, z++) {
+        if (x > 2) x = 0;
+        mvprintw(to_int((y / 3) + 0.1) + 3, x * 12, (string)plist[z]->query_cap_name());
+    }
+
+    stage = STG_INFO_MENU;
+    press_any_key();
 }
 
-void
-show_file(string file)
-{
-   clear(); 
-   cat(file);
-   press_any_key();
+void password_prompt() {
+    mvprintw(PASSWORD_PROMPT_Y, 0, "Password:                                                                       ");
+    move(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X);
+    refresh();
+    prompt_next_input(1); // Hidden input for password
 }
 
-void 
-login_check(string str)
-{
-   int error;
+void ticketholder_prompt() {
+    mvprintw(TICKETHOLDER_PROMPT_Y, 0, "Ticket Holder:                                                                  ");
+    mvprintw(PASSWORD_PROMPT_Y, 0, "                                                                                ");
+    move(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X);
+    refresh();
+    prompt_next_input(0);
+}
 
-   if (str == "guest" || str == "Guest") user_class = GUEST_OBJ;
-   else if (str == "who" || str == "Who") 
-   {
-      whos_in();
-      return;
-   }
-   else if (str == "admin" || str == "add")  
-   {
-      user_class = ADMIN_OBJ;
-   }
-   else  user_class = PLAYER_OBJ;
-   name = str;
-   stage = STG_VERIFY_PASSWD;   
-   error = catch(user_obj = clone_object(user_class));
-   if (TICKETWINDOW_DEBUG)
-   { 
-       mvprintw(TICKETHOLDER_PROMPT_Y-1, 0, 
-          "Looking for: " + name + "                                 " ); 
-       refresh();
-   }
+void show_file(string file) {
+    clear();
+    string content = read_file(file);
+    if (content) {
+        string *lines = explode(content, "\n");
+        for (int i = 0; i < sizeof(lines) && i < term_rows - 3; i++) {
+            mvprintw(i, 0, lines[i]);
+        }
+    }
+    press_any_key();
+}
 
-   if (error) 
-   { 
-      if (TICKETWINDOW_DEBUG) 
-         mvprintw(TICKETHOLDER_PROMPT_Y-1, 0, 
-         "** Fatal error #" + error + " at login.                   ");
-      write_file(ERROR_LOG, "ERROR# " + error + 
-         ": ticketwindow.c unable to clone user object: " + user_class + "\n");
-     return;
-   }
-   else if (user_class == GUEST_OBJ)
-   {
-      switch_to_user();
-      return;
-   }
-   // Note: In the event of a fail to load the object, the passwords will 
-   // obviously never match. So whether it's an invalid ticketholder, 
-   // password, or both, they'll get the same message - making it harder 
-   // for crackers.
-   else if ((int) user_obj->restore(str) != SUCCEED) 
-   {
-      // So here we just make note of it in debug mode.
-      if (TICKETWINDOW_DEBUG) 
-         mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-         "No records found for that ticketholder.                ");
-         
+void welcome() {
+    clear();
+    show_file(INFO_DIR + "welcome");
+    while (remove_call_out("clock") != -1);
+    clock();
+    ticketholder_prompt();
+    stage = STG_LOGIN;
+}
+
+void show_in_progress() {
+    clear();
+    debug_message("about to show contents of '"+INFO_DIR + "show_in_progress'\n");
+    string content = read_file(INFO_DIR + "show_in_progress");
+    debug_message(content + "\n");
+    if (content) {
+        string *lines = explode(content, "\n");
+        for (int i = 0; i < sizeof(lines) && i < term_rows - 3; i++) {
+            mvprintw(i, 0, lines[i]);
+        }
+    }
+    stage = STG_CLOSED;
+    while (remove_call_out("clock") != -1);
+    clock();
+    prompt_next_input(0);
+}
+
+void timeout(object *objs) {
+    if (failed_attempts >= MAX_FAILURES) {
+        tell_object(this_object(), "\nYou seem to be having difficulties.\nPlease contact us at " + RIT_VOICE_PHONE + "\n or " + RIT_EMAIL_ADDRESS + " if they persist.\n");
+        write_file(LOG_DIR + "failed_login.log", "Failed login attempt from " + query_ip_number() + " at " + ctime(time()) + "\n");
+    } else {
+        tell_object(this_object(), "\nInactivity Timeout.\n");
+    }
+
+    while (remove_call_out("clock") != -1);
+    while (remove_call_out("timeout") != -1);
+
+    for (int x = 0; x < sizeof(objs); x++) {
+        if (objs[x]) destruct(objs[x]);
+    }
+}
+
+void switch_to_user() {
+    object loc;
+    int res;
+
+    loc = find_object(STARTING_LOCATION);
+    if (!loc) {
+        string err = catch(call_other(STARTING_LOCATION, "???"));
+        if (err) {
+            write_file(ERROR_LOG, "ERROR: " + err + ": logon.c unable to load: " + STARTING_LOCATION + "\n");
+            shutdown();
+        }
+        loc = find_object(STARTING_LOCATION);
+    }
+
+    // Restore terminal scroll and clear screen prior to handoff
+    tell_object(this_object(), CURS_RESET_SCROLL + CURS_CLEAR + CURS_HOME);
+
+    if (user_class == GUEST_OBJ) {
+        user_obj->initialize(loc, this_object());
+    } else {
+        user_obj->initialize(loc, name);
+    }
+
+    res = exec(user_obj, this_object());
+    user_obj = 0;
+
+    if (user_class != GUEST_OBJ) {
+        timeout(({ this_object() }));
+    } else {
+        while (remove_call_out("timeout") != -1);
+    }
+}
+
+void login_check(string str) {
+    int error;
+
+    if (str == "guest" || str == "Guest") {
+        user_class = GUEST_OBJ;
+    } else if (str == "who" || str == "Who") {
+        whos_in();
+        return;
+    } else if (str == "admin" || str == "add") {
+        user_class = ADMIN_OBJ;
+    } else {
+        user_class = PLAYER_OBJ;
+    }
+
+    name = str;
+    stage = STG_VERIFY_PASSWD;
+
+    error = catch(user_obj = clone_object(user_class));
+    if (error) {
+        write_file(ERROR_LOG, "ERROR# " + error + ": ticketwindow.c unable to clone: " + user_class + "\n");
+        ticketholder_prompt();
+        return;
+    }
+
+    if (user_class == GUEST_OBJ) {
+        switch_to_user();
+        return;
+    }
+
+    if ((int)user_obj->restore(str) != SUCCEED) {
 #ifdef BETAMODE
-      // Here we are in betamode and there is no admin object, so
-      // define it now.
-      if (user_class == ADMIN_OBJ)
-      {
-         mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-            "  - Define admin password -                         ");
-         stage = STG_SET_PASSWD;
-      }
+        if (user_class == ADMIN_OBJ) {
+            mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, "  - Define admin password -                         ");
+            stage = STG_SET_PASSWD;
+        }
 #endif
-   }
-   password_prompt();
-   return;
+    }
+
+    password_prompt();
 }
 
-void passwd_check(string str)
-{
-#ifndef BETAMODE // If not in Betamode, players can only enter between shows.
-   if (user_class = PLAYER_OBJ &&
-      (int) (find_object(DIRECTOR_OBJ)->query_accepting_players()) == FALSE)
-   {
-      boxoffice = CLOSED;
-      show_in_progress();
-   }
-   else
-#endif
-   if ((int) user_obj->verify_password(str) != SUCCEED)
-   {
-      boxoffice = OPEN;
-      destruct(user_obj);
-      user_class = PLAYER_OBJ; // Reset to the default.
-      stage = STG_LOGIN;
-      if (++failed_attempts >= MAX_FAILURES) timeout( (({this_object(), user_obj})) );
-      mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,   
-         "No such ticketholder with that password.                 ");
-      ticketholder_prompt();
-   }
-   else 
-   {
-      // Assure this is a unique ticketholder.
-      if (name == "add")
-      {
-         mvprintw(TICKETHOLDER_PROMPT_Y-1, 0, " - Add new ticketholder -"); 
-         stage = STG_ADD_PLAYER;
-         ticketholder_prompt();
-         return;
-         
-      }
-      else if (user_class == ADMIN_OBJ) 
-      {
-         mvprintw(23,0,
-            "[Sicose Engine V#" + ENGINE_REV + 
-            " Carmilla's Kiss Lib#" + LIBRARY_REV + "]");
-         refresh();
-      }
-      else
-      {
-         int i;
-         object *p;
-         boxoffice = OPEN;
-         p = players();
-         for (i=0; i < sizeof(p); i++)
-         {
-            if (p[i]->query_ticketholder() == user_obj->query_ticketholder())
-            {
-               destruct(user_obj);
-               stage = STG_LOGIN;
-               if (++failed_attempts >= MAX_FAILURES) timeout( (({this_object(), user_obj})) );
-               mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, "Sorry, ticketholder already in theatre.              ");
-               ticketholder_prompt();
-               return;
+void passwd_check(string str) {
+    if ((int)user_obj->verify_password(str) != SUCCEED) {
+        boxoffice = OPEN;
+        if (user_obj) destruct(user_obj);
+        user_class = PLAYER_OBJ;
+        stage = STG_LOGIN;
+
+        if (++failed_attempts >= MAX_FAILURES) {
+            timeout(({ this_object(), user_obj }));
+            return;
+        }
+
+        mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, "No such ticketholder with that password.                 ");
+        ticketholder_prompt();
+    } else {
+        if (name == "add") {
+            mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, " - Add new ticketholder -");
+            stage = STG_ADD_PLAYER;
+            ticketholder_prompt();
+            return;
+        }
+
+        object *p = users();
+        for (int i = 0; i < sizeof(p); i++) {
+            if (p[i] != this_object() && (string)p[i]->query_ticketholder() == (string)user_obj->query_ticketholder()) {
+                destruct(user_obj);
+                stage = STG_LOGIN;
+                if (++failed_attempts >= MAX_FAILURES) {
+                    timeout(({ this_object(), user_obj }));
+                    return;
+                }
+                mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, "Sorry, ticketholder already in theatre.              ");
+                ticketholder_prompt();
+                return;
             }
-         }
-     }
-     switch_to_user();
-     
-   }
+        }
+        switch_to_user();
+    }
 }
 
-void
-passwd_set(string str)
-{
-   if ((int) new_user->set_password(str) == FAIL)
-   {
-      mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-         " - Invalid password, try another -                                          ");
-      password_prompt();
-   }
-   else
-   {
-      new_user->quit();
-      mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-         "Ticketholder created, another?                                                ");
-      stage = STG_ADD_PLAYER;
-      ticketholder_prompt();
-   }
+void passwd_set(string str) {
+    if ((int)new_user->set_password(str) == FAIL) {
+        mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, " - Invalid password, try another -                                          ");
+        password_prompt();
+    } else {
+        new_user->quit();
+        mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, "Ticketholder created, another?                                                ");
+        stage = STG_ADD_PLAYER;
+        ticketholder_prompt();
+    }
 }
 
-void
-info_menu()
-{
-   clear();
-   cat(INFO_DIR + "info_menu");
-   clock(); // Handles refresh
-   stage = STG_MENU_SELECT;
+void add_player(string new_name) {
+    int error;
+
+    if (user_obj) destruct(user_obj);
+    error = catch(new_user = clone_object(PLAYER_OBJ));
+    if (error) {
+        write_file(ERROR_LOG, "ERROR# " + error + ": ticketwindow.c unable to clone player object.\n");
+        return;
+    }
+
+    if ((int)new_user->restore(new_name) == SUCCEED) {
+        mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, "* ERROR * Ticketholder already exists!                                         ");
+        ticketholder_prompt();
+        return;
+    }
+
+    new_user->initialize(this_object(), new_name);
+    mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0, "Now define users initial password.                                      ");
+    password_prompt();
+    stage = STG_SET_PASSWD;
 }
 
-void
-add_player(string new_name)
-{
-   int    error;
-   user_obj->destruct(); // We won't be needing this anymore.
-    
-   error = catch(new_user = clone_object(PLAYER_OBJ));
-   if (error) 
-   { 
-      if (TICKETWINDOW_DEBUG) 
-         mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-         "** Fatal error #" + error + " at login.                               \n");
-      write_file(ERROR_LOG, "ERROR# " + error + 
-         ": logon.c unable to clone user object: " + user_class + "\n");
-      return;
-   }
-   if ((int) new_user->restore(new_name) == SUCCEED)
-   {
-
-      mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-         "* ERROR * Ticketholder already exists!                                         ");
-      ticketholder_prompt();
-      return;
-   }
-   new_user->initialize(this_object(), new_name);
-   mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-      "Now define users initial password.                                      ");
-   password_prompt();
-   stage = STG_SET_PASSWD;
+void info_menu() {
+    clear();
+    show_file(INFO_DIR + "info_menu");
+    clock();
+    stage = STG_MENU_SELECT;
 }
 
-//
-// This is called for all output to this interactive object.
-//
-void
-handle_messages(string message)
-{
-   printw(message);
-   refresh();
-}
+/*
+ * Line Input Processing Hook
+ */
+void process_input_line(string input_str) {
+    while (remove_call_out("timeout") != -1);
+    call_out("timeout", TIMEOUT_TIME, ({ this_object(), user_obj }));
 
-//
-// This gets called every player input round
-// so make sure we return as soon as possible
-// so as not to slow everybody else down.
-// 
-int 
-process_input()
-{
-   // Get MAX_CHAR_INPUT chars accumulated thus far.
-   while((key[length++] = getch()) != ERR && length < MAX_CHAR_INPUT); 
-   while ( i < length && key[i] != ERR)     // Now process them.
-   {
-      ch = sprintf("%c", (int) key[i]);
-      switch (stage)
-      {
-         case STG_WELCOME : // Welcome and prompt for login (info users & retries)
-            i = length;     // Don't bother w/ the rest of the keys.
+    if (!input_str) input_str = "";
+
+    switch (stage) {
+        case STG_WELCOME:
             welcome();
             break;
-         case STG_CLOSED :
-            if (key[i] == '^') welcome();  // A backdoor for getting a login prompt.
-            else if (key[i] == '?') info_menu();
-            i = length; // Don't bother w/ the rest of the keys.  
-            buf = "";
+
+        case STG_CLOSED:
+            if (input_str == "^") welcome();
+            else if (input_str == "?") info_menu();
+            else show_in_progress();
             break;
-         case STG_LOGIN :   // Gather the name after solicitation by logon() 
-            len = strlen(buf);
-            if (len == 1)   // If there was an error message, clear it.
-            {
-               mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,   
-                  "                                                                       ");
-               move(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X + 1);
-               refresh();
-            }
-            if (key[i] == KEY_RETURN) 
-            {
-               if(len == 0) break;
-               mvprintw(TICKETHOLDER_PROMPT_Y+1,0, " ");
-               refresh();
-               login_check(buf); // And check it.
-               i = length; // Don't bother w/ the rest of the keys.
-               buf = "";
-            }
-            else if (key[i] == KEY_CTRL_D) 
-            {
-               // Okay, we've decided not to login, so quit. 
-               i = length; // Don't bother w/ the rest of the keys.
-               timeout( ({this_object()}) );
-               break;
-            }
-            else if (key[i] == '?')
-            {
-               i = length; // Don't bother w/ the rest of the keys.
-               buf = "";
-               info_menu();
-               break;
-            }
-            else if (key[i] == KEY_BACKSPACE || key[i] == KEY_DC) 
-            {
-               if (len == 1) buf = "";
-               else if (len > 1) buf = extract(buf, 0, len - 2);
-               mvprintw(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X,
-                  "                                                                     ");
-               mvprintw(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X, "%s", buf);
-               refresh();
-            }
-            else if (isalnum(key[i]) && len < 32)
-            {
-               buf = buf + ch;
-               mvprintw(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X + len,"%s", ch);
-               refresh();
+
+        case STG_LOGIN:
+            if (input_str == "?") {
+                info_menu();
+            } else if (strlen(input_str) > 0) {
+                login_check(input_str);
+            } else {
+                ticketholder_prompt();
             }
             break;
 
-         case STG_VERIFY_PASSWD : /* Gather password after solicited by login_check */
-            len = strlen(buf);
-            if (key[i] == KEY_RETURN) 
-            {
-               if (len < 1) break;
-               passwd_check(buf);
-               buf = "";
-            }
-            else if (key[i] == KEY_CTRL_D) 
-            {
-               // Okay, we've decided not to login this ticketholder. 
-               i = length; // Don't bother w/ the rest of the keys.
-               buf = "";
-               welcome();
-               break;
-            }
-            else if (key[i] == KEY_BACKSPACE || key[i] == KEY_DC) 
-            {
-               mvprintw(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X, 
-                  "                                                     " + 
-                  "                ");
-               if (len < 2) 
-               {
-                  buf = "";
-                  move(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X);
-               }
-               else if (len > 1) 
-               {
-                  buf = extract(buf, 0, len - 2);
-                  mvprintw(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X, 
-                  extract("_________________________________________" + 
-                  "_____________________________________________________", 0, len - 2));
-               }
-               refresh();
-            }
-            else if (isalnum(key[i]) || ispunct(key[i]))
-            {
-               buf = buf + ch;
-               mvprintw(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X + len,"_");
-               refresh();
+        case STG_VERIFY_PASSWD:
+            passwd_check(input_str);
+            break;
+
+        case STG_ADD_PLAYER:
+            if (strlen(input_str) > 0) {
+                add_player(input_str);
+            } else {
+                ticketholder_prompt();
             }
             break;
 
-         case STG_ADD_PLAYER :
-            len = strlen(buf);
-            if (key[i] == KEY_RETURN) 
-            {
-               if (len < 1) break;
-               add_player(buf);
-               buf = "";
-            }
-            else if (key[i] == KEY_CTRL_D) 
-            {
-               // Okay, we've decided not to add a player, so quit. 
-               i = length; // Don't bother w/ the rest of the keys.
-               timeout( ({this_object()}) );
-               break;
-            }
-            else if (key[i] == KEY_BACKSPACE || key[i] == KEY_DC) 
-            {
-               if (len == 1) buf = "";
-               else if (len > 1) buf = extract(buf, 0, len - 2);
-               mvprintw(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X,
-                  "                                                                     ");
-               mvprintw(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X, "%s", buf);
-               refresh();
-            }
-            else if (isalnum(key[i]) && len < 32)
-            {
-               buf = buf + ch;
-               mvprintw(TICKETHOLDER_PROMPT_Y, TICKETHOLDER_PROMPT_X + len,"%s", ch);
-               refresh();
-            }
-            break;
-         case STG_SET_PASSWD : // For defining an initial password.
-            len = strlen(buf);
-            if (key[i] == KEY_RETURN) 
-            {
-               if(len < 1) break;
-               passwd_set(buf);
-               buf = "";
-            }
-            else if (key[i] == KEY_CTRL_D) 
-            {
-               // Okay, we've decided not to add this player, so prepare to 
-               // try again.
-               i = length; // Don't bother w/ the rest of the keys.
-               buf = "";
-               stage = STG_ADD_PLAYER;
-               new_user->destruct(); 
-               mvprintw(TICKETHOLDER_PROMPT_Y - 1, 0,  
-                  "Ticketholder Canceled! Another?                                                ");
-               ticketholder_prompt();
-               break;
-            }
-            else if (key[i] == KEY_BACKSPACE || key[i] == KEY_DC) 
-            {
-               mvprintw(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X, 
-                  "                                                     " + 
-                  "                ");
-               if (len < 2) 
-               {
-                  buf = "";
-                  move(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X);
-               }
-               else if (len > 1) 
-               {
-                  buf = extract(buf, 0, len - 2);
-                  mvprintw(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X, 
-                  extract("_________________________________________" + 
-                  "_____________________________________________________", 0, len - 2));
-               }
-               refresh();
-            }
-            else if (isalnum(key[i]) || ispunct(key[i]))
-            {
-               buf = buf + ch;
-               mvprintw(PASSWORD_PROMPT_Y, PASSWORD_PROMPT_X + len,"_");
-               refresh();
-            }
+        case STG_SET_PASSWD:
+            passwd_set(input_str);
             break;
 
-         case STG_INFO_MENU :
-            i = length; // Don't bother w/ the rest of the keys.
+        case STG_INFO_MENU:
             info_menu();
             break;
 
-         case STG_MENU_SELECT :
-            i = length; // Don't bother w/ the rest of the keys.
-            switch(key[0])
-            {
-                case '1': // What is RIT?
-                   show_file(INFO_DIR + "whatis_RIT");
-                   stage = STG_INFO_MENU;
-                   break;
-                case '2': // System requirements
-                   show_file(INFO_DIR + "system_requirements");
-                   press_any_key();
-                   stage = STG_INFO_MENU;
-                   break;
-                case '3': // Login a guest user.
-                   show_file(INFO_DIR + "guest_message");
-                   login_check("guest");
-                   break;
-                case '4': // Whatsit cost?
-                   show_file(INFO_DIR + "whatsit_cost");
-                   press_any_key();
-                   stage = STG_INFO_MENU;
-                   break;
-                case '5': // Payment_Methods?
-                   show_file(INFO_DIR + "payment_methods1");
-                   press_any_key();
-                   stage = STG_MORE_PAYMENT_METHODS;
-                   break;
-                case '6': // Becoming a ticketholder
-                   show_file(INFO_DIR + "getan_acct");
-                   press_any_key();
-                   stage = STG_INFO_MENU;
-                   break;
-
-                case '7': // Who's in?
-                {
-                   whos_in();
-                   break;
-               }
-               case '9': // Go back to the ticket window
-                 if ((int) (find_object(DIRECTOR_OBJ)->query_accepting_players()) == TRUE)
-                 {
-                    boxoffice = OPEN;
+        case STG_MENU_SELECT:
+            switch (input_str) {
+                case "1":
+                    show_file(INFO_DIR + "whatis_RIT");
+                    stage = STG_INFO_MENU;
+                    break;
+                case "2":
+                    show_file(INFO_DIR + "system_requirements");
+                    stage = STG_INFO_MENU;
+                    break;
+                case "3":
+                    show_file(INFO_DIR + "guest_message");
+                    login_check("guest");
+                    break;
+                case "4":
+                    show_file(INFO_DIR + "whatsit_cost");
+                    stage = STG_INFO_MENU;
+                    break;
+                case "5":
+                    show_file(INFO_DIR + "payment_methods1");
+                    stage = STG_MORE_PAYMENT_METHODS;
+                    break;
+                case "6":
+                    show_file(INFO_DIR + "getan_acct");
+                    stage = STG_INFO_MENU;
+                    break;
+                case "7":
+                    whos_in();
+                    break;
+                case "9":
                     welcome();
-                 }
-                 else 
-                 {
-                    boxoffice = CLOSED;
-                    show_in_progress();
-                 }
-                 break; 
+                    break;
+                default:
+                    info_menu();
+                    break;
             }
             break;
 
-      case STG_MORE_PAYMENT_METHODS:
-            i = length; // Don't bother w/ the rest of the keys.
+        case STG_MORE_PAYMENT_METHODS:
             show_file(INFO_DIR + "payment_methods2");
-            press_any_key();
             stage = STG_INFO_MENU;
             break;
-         
-      } // End stage switch.
-      i++;
-   }
-   if (length > 1) // If there was activity, reset the timeout.
-   {
-      while (remove_call_out("timeout") != -1);
-      call_out("timeout", TIMEOUT_TIME, ( ({this_object(), user_obj}) ) ); 
-   }
-   i = length = 0; // Set these for next time in.
-   return TRUE;
+
+        default:
+            ticketholder_prompt();
+            break;
+    }
 }
 
-//
-// logon() is automatically called by the engine. 
-// Set term basics and prompt the user for login.
-//
-int logon() 
-{
-   /* Initialize the terminal */
-   raw();             /* Key@a-time, w/out interrupt, quit, control-flow */
-   noecho();          /* We'll handle the echo, thanks. */
-   scrollok(stdscr, FALSE); /* No scrolling */
+int logon() {
+    clear();
+    raw();
+    noecho();
+    scrollok(0, 0);
 
-   user_class = PLAYER_OBJ; /* The default user_class */
-   ch = buf = "";
-   i = length = 0;
-   key = allocate(MAX_TEXT);
-   if ((int) (find_object(DIRECTOR_OBJ)->query_accepting_players()) == TRUE)
-   {
-      boxoffice = OPEN;
-      welcome();
-   }
-   else
-   {
-      boxoffice = CLOSED;
-      show_in_progress();
-   }
-   call_out("timeout", TIMEOUT_TIME,  ( ({this_object(), user_obj}) ) ); // Drop line after TIMEOUT_TIME.
-   return TRUE;
+    user_class = PLAYER_OBJ;
+    buf = "";
+
+    object dir = find_object(DIRECTOR_OBJ);
+    if (dir && (int)dir->query_accepting_players() == TRUE) {
+        boxoffice = OPEN;
+        welcome();
+    } else {
+        boxoffice = CLOSED;
+        show_in_progress();
+    }
+
+    call_out("timeout", TIMEOUT_TIME, ({ this_object(), user_obj }));
+    return 1;
 }
-

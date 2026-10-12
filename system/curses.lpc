@@ -1,0 +1,54 @@
+// Gemini created
+private int term_width  = 80;
+private int term_height = 24;
+private int curses_mode = 0;
+
+int query_curses() { return curses_mode; }
+
+void set_term_size(int w, int h) {
+    if (w > 20) term_width = w;
+    if (h > 10) term_height = h;
+}
+
+/* Layout:
+ * Rows 1 to (H - 3): Scrolling Main/Game Region
+ * Row  (H - 2):      Horizontal Separator
+ * Row  (H - 1):      Status Bar (Vitals, room, etc.)
+ * Row  H:            Input Prompt
+ */
+void init_curses() {
+    curses_mode = 1;
+
+    string buf = "";
+    // Reset terminal & configure scrolling region
+    buf += CURS_CLEAR + CURS_HOME;
+    buf += CURS_SET_SCROLL(1, term_height - 3);
+
+    // Separator line
+    buf += CURS_MOVE(term_height - 2, 1);
+    buf += repeat_string("-", term_width);
+
+    // Initial prompt position
+    buf += CURS_MOVE(term_height, 1) + "> ";
+
+    tell_object(this_object(), buf);
+}
+
+void disable_curses() {
+    curses_mode = 0;
+    tell_object(this_object(), CURS_RESET_SCROLL + CURS_CLEAR + CURS_HOME);
+}
+
+/* Update status line without interrupting typing */
+void update_status_bar(string status_str) {
+    if (!curses_mode) return;
+
+    string out = CURS_SAVE;
+    out += CURS_MOVE(term_height - 1, 1);
+    out += CURS_REVERSE;
+    out += sprintf("%-*.*s", term_width, term_width, status_str);
+    out += CURS_RESET;
+    out += CURS_RESTORE;
+
+    tell_object(this_object(), out);
+}

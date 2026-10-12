@@ -1,20 +1,22 @@
 //=======================================================================\\
-//                                                                       \\ 
-// Filename:    System.c                                                 \\
+//                                                                       \\
+// Filename:    system.c                                                 \\
 //                                                                       \\
 // Description: This handles all system functions.                       \\
+//              Modified with curses emulation hooks for FluffOS.        \\
 //                                                                       \\
 // History:                                                              \\
 //                                                                       \\
 // 09/22/93  jmr  Created                                                \\
 // 08/27/94  jmr  Readied for online.                                    \\
+// 10/10/26  mod  Added FluffOS curses & terminal sizing hooks           \\
 //                                                                       \\
 //==================== Copyright 1993 ===== Raymond Interactive Theatre =\\
-//                                                                       \\
 //                                                                       \\
 //=======================================================================\\
 
 #pragma strict_types
+
 #include "/includes/config.h"
 #include "/includes/std_defs.h"
 
@@ -22,66 +24,86 @@ inherit "system/LPMud";
 inherit "system/Amylaar";
 inherit "system/MudOS";
 
-int valid_save_binary(string filename) {return 1;}
+int valid_save_binary(string filename) { return 1; }
 
 // Driver refers to this routine to connect a user to the system.
 //
 // Order of events:
 // 1. log in the user
 // 2. Transfer to guest, player, or administrator as determined by login.
-// 3. return the logged in object to sicose
+// 3. return the logged in object to the driver
+object connect() {
+    object user;
+    mixed error;
 
-object connect() 
-{
-   object user;
-   mixed error;
-    
-   error = catch(user = clone_object(TICKETWINDOW_OBJ));
+    debug_message("** in connect().\n");
 
-   if (error) 
-   { 
-      write("** Fatal error #" + error + " at login.\n");
-      shutdown();
-   }
-
-   return user;
+    error = catch(user = clone_object(TICKETWINDOW_OBJ));
+    if (error) {
+        write("** Fatal error #" + error + " at login.\n");
+        shutdown();
+    }
+    return user;
 }
 
 /*
-// Function:    Epilog()
+ * Driver callback for Telnet NAWS (RFC 1073 - Negotiate About Window Size).
+ * FluffOS calls window_size(width, height) on master if not directly
+ * handled by the interactive object, or relays it here.
+ */
+void window_size(int width, int height) {
+    object player;
+    
+    player = previous_object();
+    if (!player) player = this_player();
+
+    if (player && function_exists("set_terminal_size", player)) {
+        player->set_terminal_size(width, height);
+    }
+}
+
+/*
+ * Telnet subnegotiation hook (optional in FluffOS when handling extended
+ * VT100/ANSI query responses).
+ */
+void telnet_subnegotiation(buffer buf) {
+    object player = previous_object();
+    if (player && function_exists("handle_telnet_subopt", player)) {
+        player->handle_telnet_subopt(buf);
+    }
+}
+
+/*
+// Function:    epilog()
 // Description:	Loads master data, including connection list & preloaded places
 // Arguments:	load_empty: If true, epilog() does no preloading
 // Return:      List of ".c" files to preload
 */
-string *epilog(int load_empty)
-{
-   string *objs, str;
-   int i;
+string *epilog(int load_empty) {
+    string *objs, str;
+    int i;
 
-   if (load_empty)
-   {
-      write("** Pre-loading not requested.\n");
-      return ({});
-   }
+    if (load_empty) {
+        write("** Pre-loading not requested.\n");
+        return ({});
+    }
 
-   if (! (str = read_file(PRELOAD_LST)) )  
-   {
-      write("** " + PRELOAD_LST + " not found.\n");
-      return ({});
-   }
+    if (!(str = read_file(PRELOAD_LST))) {
+        write("** " + PRELOAD_LST + " not found.\n");
+        return ({});
+    }
 
-   objs = explode(str, "\n");
-   for (i=0; i < sizeof(objs); i++)
-      if (objs[i][0] == '#') objs[i] = 0;
-
-   return objs;
+    objs = explode(str, "\n");
+    for (i = 0; i < sizeof(objs); i++) {
+        if (objs[i][0] == '#') objs[i] = 0;
+    }
+    return objs;
 }
 
 /*
 // Preload objects
 */
-void preload(string file)
-{
+void preload(string file) {
     int t;
     string error;
     object obj;
@@ -91,64 +113,56 @@ void preload(string file)
     t = time();
     write("Preloading: " + file + "\n");
     error = catch(call_other(file, "??"));
-    if (error != 0) 
-	write("** Error #" + error + " encountered upon loading of " + 
-              file + "\n");
-    else 
-    {
-        obj = find_object(file);
-        if (obj)
-           if ((int) obj->query_object_type() == LOCATION || 
-               (int) obj->query_object_type() == STAGE)
-              obj->initialize(0);
 
-	t = time() - t;
-	write(">" + t/60 + "." + t % 60 + "<\n");
+    if (error != 0) {
+        write("** Error #" + error + " encountered upon loading of " + file + "\n");
+    } else {
+        obj = find_object(file);
+        if (obj) {
+            if ((int)obj->query_object_type() == LOCATION || (int)obj->query_object_type() == STAGE) {
+                obj->initialize(0);
+            }
+        }
+        t = time() - t;
+        write(">" + t / 60 + "." + t % 60 + "<\n");
     }
 }
 
-string get_simul_efun() 
-{
-   string error;
-   if (error = catch(call_other(LIBRARIES, "??"))) 
-   {
-      write("Failed to load " + LIBRARIES + "\n");
-      write("error message :" + error + "\n");
-      shutdown();
-      return 0;
-   }
-   return LIBRARIES;
+string get_simul_efun() {
+    string error;
+
+    if (error = catch(call_other(LIBRARIES, "??"))) {
+        write("Failed to load " + LIBRARIES + "\n");
+        write("error message :" + error + "\n");
+        shutdown();
+        return 0;
+    }
+    return LIBRARIES;
 }
 
 /*
  * Function name:   save_player
  * Description:     Saves a player object.
  */
-int
-save_player()
-{
+int save_player() {
     int res;
     object pobj;
 
     pobj = previous_object();
-
-    if (function_exists("save_player", pobj) !=  "/objects/living/users/player")
-	  return 0;
-    else
-    {
-	export_uid(pobj);
-	res = (int)pobj->save_player(pobj->query_real_name());
-	seteuid((string)pobj->query_real_name());
-	export_uid(pobj);
-	seteuid(get_root_uid());
-	return res;
+    if (function_exists("save_player", pobj) != "/objects/living/users/player") {
+        return 0;
+    } else {
+        export_uid(pobj);
+        res = (int)pobj->save_player(pobj->query_real_name());
+        seteuid((string)pobj->query_real_name());
+        export_uid(pobj);
+        seteuid(get_root_uid());
+        return res;
     }
 }
 
-int load_player_from_file(string name, object player) 
-{
+int load_player_from_file(string name, object player) {
     int res;
-
     export_uid(player);
     res = (int)player->actually_restore_player(name);
     seteuid(name);
@@ -157,10 +171,10 @@ int load_player_from_file(string name, object player)
     return res;
 }
 
-void save_player_to_file(string name, object player) 
-{
-    if (!seteuid(get_root_uid()))
-	write("** Seteuid failed!\n");
+void save_player_to_file(string name, object player) {
+    if (!seteuid(get_root_uid())) {
+        write("** Seteuid failed!\n");
+    }
     export_uid(player);
     player->actually_save_player(name);
     seteuid(name);
@@ -168,59 +182,54 @@ void save_player_to_file(string name, object player)
     seteuid(get_root_uid());
 }
 
-
 /*
  * Define where the '#include' statement is supposed to search for files.
- * "." will automatically be searched first, followed in order as given
- * below. The path should contain a '%s', which will be replaced by the file
- * searched for.
-//
-// This should be called much sooner by the engine so that it can be used
-// for all files inherited into master, for the simul_efun, etc.
-*/
-string *define_include_dirs()       { return ({"/includes/%s"}); }
-
+ */
+string *define_include_dirs() {
+    return ({"/includes/%s"});
+}
 
 /*
  * To test a new function xx in object yy, do
  * parse "-fcall yy xx arg" "-fshutdown"
  */
-void 
-flag(string str) 
-{
+void flag(string str) {
     string file, arg;
     int num_arg;
 
     if (sscanf(str, "for %d", num_arg) == 1) {
-	write("Got : " + catch(this_object()->xx(num_arg)) + "\n");
-	return;
+        write("Got : " + catch(this_object()->xx(num_arg)) + "\n");
+        return;
     }
+
     if (str == "shutdown") {
-	shutdown();
-	return;
+        shutdown();
+        return;
     }
+
     // Call -fmk_rt_tbl once new locations have been added to
     // regenerate the routing table (or else just delete routing.tbl)
-    if (str == "mk_rt_tbl") 
-    {
-       int error;
-       object Navigate;
+    if (str == "mk_rt_tbl") {
+        int error;
+        error = catch(call_other(NAVIGATE_OBJ, "??"));
+        if (error != 0) {
+            write("** Error #" + error + " encountered upon loading of navigate daemon.\n");
+        } else {
+            find_object(NAVIGATE_OBJ)->make_routing_tbl();
+        }
+        return;
+    }
 
-       error = catch(call_other(NAVIGATE_OBJ, "??"));
-       if (error != 0) 
-	  write("** Error #" + error + " encountered upon loading of navigate daemon.\n");
-       else find_object(NAVIGATE_OBJ)->make_routing_tbl();
-       return;
-    }
     if (sscanf(str, "echo %s", arg) == 1) {
-	write(arg + "\n");
-	return;
+        write(arg + "\n");
+        return;
     }
+
     if (sscanf(str, "call %s %s", file, arg) == 2) {
-	arg = (string)call_other(file, arg);
-	write("Got " + arg + " back.\n");
-	return;
+        arg = (string)call_other(file, arg);
+        write("Got " + arg + " back.\n");
+        return;
     }
+
     write("master: Unknown flag " + str + "\n");
 }
-

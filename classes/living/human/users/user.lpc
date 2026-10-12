@@ -10,6 +10,7 @@
 // 08/28/93  jmr  Modified to inherit the attributes of "living".        \\
 // 08/15/94  jmr  Readied for going online.                              \\
 // 08/23/94  jmr  Added restart()                                        \\
+// 10/10/26  mod  Added curses emulation.                                \\
 //                                                                       \\
 //============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
 

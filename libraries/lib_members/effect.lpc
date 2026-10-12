@@ -151,6 +151,27 @@ effect(int range, object doer, string doer_perceptions, string viewer_perception
    return;
 }
 
+syntax-error-here so I can pickup where I left off
+
+create_wsclient_payload()
+{
+      mapping payload = ([
+         "type" : "room",
+         "data" : ([
+         "title" : this_object()->query_short(),
+         "description" : this_object()->query_long(),
+         "bg" : "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
+         "exits" : ({ query_possible_directions() }),
+         "menu" : ({
+               ([ "label" : "Order Ale", "command" : "buy ale" ]),
+               ([ "label" : "Sit at Table", "command" : "sit table" ])
+         })
+         ])
+   ]);
+
+   write(json_encode(payload) + "\n");
+}
+
 public
 int
 valid_action(object tp)

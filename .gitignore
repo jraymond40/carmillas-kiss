@@ -1,1 +1,10 @@
 .DS_Store
+system/log/error.log
+system/log/debug.log
+system/log/shutdown.log
+system/log/error.log
+system/log/error.log
+system/log/domain_stats
+system/log/debug.log
+system/log/author_stats
+ERROR_LOG
