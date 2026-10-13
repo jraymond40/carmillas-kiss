@@ -129,15 +129,16 @@ void preload(string file) {
 }
 
 string get_simul_efun() {
-    string error;
+    // string error;
 
-    if (error = catch(call_other(LIBRARIES, "??"))) {
-        write("Failed to load " + LIBRARIES + "\n");
-        write("error message :" + error + "\n");
-        shutdown();
-        return 0;
-    }
-    return LIBRARIES;
+    // if (error = catch(call_other(LIBRARIES, "??"))) {
+    //     write("Failed to load " + LIBRARIES + "\n");
+    //     write("error message :" + error + "\n");
+    //     shutdown();
+    //     return 0;
+    // }
+    // return LIBRARIES;
+    return "/libraries/libraries";
 }
 
 /*

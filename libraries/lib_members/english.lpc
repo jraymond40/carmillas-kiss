@@ -18,6 +18,13 @@
 #include "/includes/english.h"  // Full include pathnames are required here since 
 #include "/includes/std_defs.h" // the std path isn't known to the engine yet.
 
+// Deprecated efuns we emulate here:
+varargs string extract(string str, int start, int end) {
+    if (!stringp(str)) return "";
+    if (nullp(end)) return str[start..];
+    return str[start..end];
+}
+
 //
 // Function name: begins_w_vowel
 //

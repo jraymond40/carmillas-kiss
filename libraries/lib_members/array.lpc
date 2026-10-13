@@ -65,3 +65,16 @@ remove_from_array(mixed *array, mixed item)
    else return 0;
 }
 
+mixed *uniq_array(mixed *arr) {
+    mapping seen = ([]);
+
+    if (!pointerp(arr) || !sizeof(arr)) {
+        return ({ });
+    }
+
+    foreach (mixed item in arr) {
+        seen[item] = 1;
+    }
+
+    return keys(seen);
+}

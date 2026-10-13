@@ -1,260 +1,195 @@
 //=======================================================================\\
-//                                                                       \\  
-// Filename:    effect.c                                                 \\
 //                                                                       \\
-// Description: The effects of my actions as perceived by me & others.   \\
-//              Including 'broadcasting' during a cutto & between scenes.\\
+// Filename:    effect.lpc                                               \\
+//                                                                       \\
+// Description: Global and local sensory effect subsystem.               \\
+//              Rewritten to emulate curses/pgui effects via pure        \\
+//              LPC and VT100/ANSI control escape sequences.             \\
+//                                                                       \\
 // History:                                                              \\
 //                                                                       \\
-// 06/01/93  jmr  Created                                                \\
+// 01/14/94  jmr  Original                                               \\
+// 08/18/94  jmr  Enhanced for sound & visual feedback.                  \\
+// 10/13/26  mod  Emulated curses/pgui effects using ANSI control codes. \\
+//                                                                       \\
+//============== Copyright 1994 ===== Raymond Interactive Theatre, Ltd. =\\
 //                                                                       \\
 //=======================================================================\\
-//                                                                       \\
-//=======================================================================\\
 
-#include "/includes/config.h"   // Full include pathnames required here as
-#include "/includes/std_defs.h" // the std path isn't known to the engine yet. 
-#include "/includes/curses.h"
+#pragma strict_types
 
-//#define EFFECT_DEBUG
+#include <config.h>
+#include <std_defs.h>
 
-private nosave int    between_acts;
-private nosave int    cutto_in_effect;
-private nosave object location_cutto;
+#define EFFECT_BANNER_ROW    11
+#define EFFECT_BANNER_COLS   80
 
-//  The effects objects have on the environment.
-//  effect(range, doer, doer_perception, 
-//                viewer_perception, 
-//                doee, doee_perception)
-//
-//  range	Range of effect... OUTSIDE | INDIV | GLOBAL | LOCAL | RADIUS (TBD) 
-//	                             -3       -2      -1       0      (1-n)
-//
-//  OUTSIDE     Effects perceived by everyone outside the location_cutto
-//  INDIV       Effects perceived by the individual only
-//  GLOBAL      Effects perceived by everyone
-//  LOCAL       Effects perceived by those in this location
-//  Radius      Effects perceived by those in radially adjacent locations TBD
-//
-//  doer		Action initiater
-//  doer_perception	Initiaters perception
-//
-//  viewer_percepetion	Everyone else's perception
-//
-// Optional:
-//
-//  doee		Action receiver
-//  doee_perception 	Receivers perception
-//
-public
-varargs
-void 
-effect(int range, object doer, string doer_perceptions, string viewer_perceptions, object doee, string doee_perceptions)
-{
-   int i;
-   int rndm;
-   object *character; /* The list of characters in the immediate environment */
-   object loc; // This location.
+/* Terminal Sensory Controls */
+#define TERM_BELL            "\007"
+#define TERM_FLASH           CSI "?5h" CSI "?5l"       // Screen flash (reverse video toggle)
+#define TERM_INVERT_ON       CSI "?5h"
+#define TERM_INVERT_OFF      CSI "?5l"
 
-   if (range == GLOBAL || 
-      (cutto_in_effect && (doer ? environment(doer)==location_cutto : TRUE)) || 
-       range == OUTSIDE)
-   {
-      // Find all the interactive users, and eliminate logon objects.
-      object *tmp;
-      int     j, character_size;
-      tmp = users();
-      for (i=0, character_size=0; i< sizeof(tmp); i++)
-         if ((int) tmp[i]->query_human_type() != FALSE) character_size++;
-      character = allocate(character_size);
-      for (i=0, j=0; i< sizeof(tmp); i++)
-         if ((int) tmp[i]->query_human_type() != FALSE) character[j++] = tmp[i];      
-   }
-   else if (range == LOCAL)
-   {
-      if (doer) loc = environment(doer);
-      if (loc) character = all_inventory(loc);
-      else if (doer) character = all_inventory(doer); // 'doer' is actually a loc.
-   }
-   else if (range == INDIV)
-// was:      character = loc = doer;
-      loc = doer;
-   else { /* Set up a variable range function here. */ }
-
-   /* If we've specified a doer ... */
-   if (doer && loc)
-   {
-      /* Make sure they're conscious, otherwise... */
-      if (! (int) doer->conscious() && ((int) doer->query_object_type() == LIVING)) 
-      {
-         doer_perceptions = "Despite your efforts, nothing happens.\n";
-         rndm = random(10);
-         if (rndm < 4)
-            viewer_perceptions = doer->query_cap_name() + " twitches faintly.\n";
-         else if (rndm < 8)
-            viewer_perceptions = doer->query_cap_name() + " mumbles in " + 
-            doer->query_possessive() + " unconscious state.\n";
-         else
-            viewer_perceptions = doer->query_cap_name() + " emits an ever so slight groan.\n";
-      }
-   }
-
-   /* Handle all objective effects (LOCAL, GLOBAL, OUTSIDE, & Range) */
-   if ( range != INDIV && character)
-   {
-      for (i=0; i < sizeof(character); i++) 
-      {
-#ifdef EFFECT_DEBUG
-         write_file(ERROR_LOG, "Message sent to " + (string) character[i]->query_short() + "\n");
+#ifndef GLOBAL
+#define GLOBAL               8  // Mudlib-wide / Everywhere
 #endif
-         /* Here's what I see and hear of what I do */
-         if (character[i] == doer)
-         { 
-            if (doer_perceptions != "") tell_object(doer, "   " + doer_perceptions + "\n");
-         }
-         /* Here's what other unconscious participants perceive */
-         else if (!(int) (character[i]->conscious()) && !cutto_in_effect ) 
-         {
-            tell_object(character[i], ".\n");
-         }
-         /* Here's what the action receiver perceives */
-         else if (doee && character[i] == doee)
-         { 
-            tell_object(doee, "   " + doee_perceptions + "\n");
-         }
-         /* Here's how the rest of the conscious world perceives my actions */
-         else if (viewer_perceptions)
-         {
-            if (cutto_in_effect && location_cutto != environment(character[i])) 
-               tell_object(character[i], "   " + viewer_perceptions + "\n");
-            else if (range == OUTSIDE && location_cutto == environment(character[i])) 
-               {} /* No messages to people within this room */
-            else
-               tell_object(character[i], "   " + viewer_perceptions + "\n");
-         }
-      }
-   }
-   /* Handle subjectively perceived effects (INDIV) */
-   else 
-   {
+#define INDIVIDUAL           1  // Single target object
+#define ROOM                 2  // Current room environment
+#define VICINITY             4  // Room and adjacent locations
 
-#ifdef EFFECT_DEBUG
-         write_file(ERROR_LOG, "Message sent to " + doer->query_short() + "\n");
-#endif
-      if (doer && doer_perceptions != "") 
-         tell_object(doer, "   " + doer_perceptions + "\n");
-   }
+// Prototypes/* Effect Bitmask Types */
+#define FX_NONE              0
+#define FX_BELL              (1 << 0)  // 1
+#define FX_FLASH             (1 << 1)  // 2
+#define FX_SHAKE             (1 << 2)  // 4
+#define FX_ALL               (FX_BELL | FX_FLASH | FX_SHAKE)
 
-#ifdef EFFECT_DEBUG
-         write_file(ERROR_LOG, "-----Effect complete.\n");
-#endif
-   return;
+varargs void effect(int scope, object center, string visual_msg, string sound_or_audible_msg, int fx_type);
+private void deliver_effect(object who, string visual_msg, string sound_or_audible_msg, int fx_type);
+private void draw_effect_banner(object who, string text);
+object *uniq_array(object *arr);
+
+
+/*
+ * Deliver effect to an individual user
+ */
+private void deliver_effect(object who, string visual_msg, string sound_or_audible_msg, int fx_type) {
+    if (!who || !interactive(who)) return;
+
+    string fx_packet = "";
+
+    // 1. Audio / Bell cues
+    if (fx_type & FX_BELL) {
+        fx_packet += TERM_BELL;
+    }
+
+    // 2. Visual Strobe / Flash
+    if (fx_type & FX_FLASH) {
+        fx_packet += TERM_FLASH;
+    }
+
+    if (strlen(fx_packet)) {
+        tell_object(who, fx_packet);
+    }
+
+    // 3. Visual Banner / Text Overlay
+    if (visual_msg && strlen(visual_msg)) {
+        if (function_exists("query_curses", who) && (int)who->query_curses()) {
+            draw_effect_banner(who, visual_msg);
+        } else if (function_exists("handle_messages", who)) {
+            who->handle_messages(visual_msg);
+        } else {
+            tell_object(who, visual_msg + "\n");
+        }
+    }
+
+    // 4. Ambient / Sound Description Text
+    if (sound_or_audible_msg && strlen(sound_or_audible_msg)) {
+        if (function_exists("handle_messages", who)) {
+            who->handle_messages(sound_or_audible_msg);
+        } else {
+            tell_object(who, sound_or_audible_msg + "\n");
+        }
+    }
 }
 
-syntax-error-here so I can pickup where I left off
+/*
+ * Draw centered visual banner across row 11 in emulated curses mode
+ */
+private void draw_effect_banner(object who, string text) {
+    if (!text || !who) return;
 
-create_wsclient_payload()
-{
-      mapping payload = ([
-         "type" : "room",
-         "data" : ([
-         "title" : this_object()->query_short(),
-         "description" : this_object()->query_long(),
-         "bg" : "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
-         "exits" : ({ query_possible_directions() }),
-         "menu" : ({
-               ([ "label" : "Order Ale", "command" : "buy ale" ]),
-               ([ "label" : "Sit at Table", "command" : "sit table" ])
-         })
-         ])
-   ]);
+    string clean_text = replace_string(replace_string(text, "\r", ""), "\n", " ");
+    int len = strlen(clean_text);
+    int col = 1;
 
-   write(json_encode(payload) + "\n");
+    if (len < EFFECT_BANNER_COLS) {
+        col = (EFFECT_BANNER_COLS - len) / 2;
+    } else {
+        clean_text = clean_text[0..EFFECT_BANNER_COLS - 1];
+    }
+
+    // Move to designated banner line, render reverse video, then restore cursor
+    string banner = CURS_SAVE +
+                    CURS_MOVE(EFFECT_BANNER_ROW, 1) +
+                    CURS_CLEAR_TO_EOL +
+                    CURS_MOVE(EFFECT_BANNER_ROW, col) +
+                    CURS_REVERSE + clean_text + CURS_RESET +
+                    CURS_RESTORE;
+
+    tell_object(who, banner);
+
+    // Also push the notification into the scrolling event buffer
+    if (function_exists("handle_messages", who)) {
+        who->handle_messages("[EFFECT] " + clean_text);
+    }
 }
 
-public
-int
-valid_action(object tp)
-{
-   int valid;
+/*
+ * Main entry point: effect()
+ *
+ * Scope definitions:
+ *   GLOBAL    - Every interactive player online
+ *   ROOM      - Players present in the current room/environment
+ *   VICINITY  - Players in the room and adjacent coordinates
+ *   INDIVIDUAL- Targets 'center' specifically
+ */
+varargs void effect(int scope, object center, string visual_msg, string sound_or_audible_msg, int fx_type) {
+    object *recipients = ({ });
 
-   valid = tp->conscious();
+    switch (scope) {
+        case GLOBAL:
+            recipients = filter(users(), (: interactive($1) :));
+            break;
 
-   if (! valid) 
-      notify_fail("Despite your efforts, nothing happens.\n");
+        case INDIVIDUAL:
+            if (center && interactive(center)) {
+                recipients = ({ center });
+            }
+            break;
 
-   /* No response to actions when in locations not in the "cut" */
-   if ((cutto_in_effect && location_cutto != environment(tp)) || between_acts) 
-   {
-      notify_fail("");
-      if ((int) tp->query_human_type() == NPC) valid = TRUE;
-      else valid = FALSE;
-   }
+        case ROOM:
+            if (center) {
+                object env = environment(center);
+                if (!env && center->is_location()) env = center;
+                if (env) {
+                    recipients = filter(all_inventory(env), (: interactive($1) :));
+                }
+            }
+            break;
 
-   return valid;
-}
+        case VICINITY:
+            if (center) {
+                object current_loc = environment(center);
+                if (!current_loc && center->is_location()) current_loc = center;
 
-public
-void
-set_dfltport_mode(int s, int m)
-{
-   int     i;
-   object *list;
+                if (current_loc) {
+                    // Collect occupants from current location
+                    recipients = filter(all_inventory(current_loc), (: interactive($1) :));
 
-   list = users();
+                    // Query adjacent locations if supported by navigation/location classes
+                    if (function_exists("query_adjacent_locations", current_loc)) {
+                        object *adjacent = (object *)current_loc->query_adjacent_locations();
+                        if (sizeof(adjacent)) {
+                            foreach (object loc in adjacent) {
+                                if (loc) {
+                                    recipients += filter(all_inventory(loc), (: interactive($1) :));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            break;
 
-   for (i = 0; i < sizeof(list); i++)
-   {
-      if (s == ON) portattron((portptr) list[i]->query_eventport(), m);
-      else portattroff((portptr) list[i]->query_eventport(), m);
-   }
-}
+        default:
+            recipients = filter(users(), (: interactive($1) :));
+            break;
+    }
 
-public
-void
-cutto(string location_id)
-{
-   string location_desc;
-   return;
-
-   location_cutto = find_object(LOCATION_DIR + LOCATION_PREFIX + location_id);
-   location_desc  = location_cutto->query_short();
-
-   /* Freeze current Yliastrum state */
-   find_object(DIRECTOR_OBJ)->set_game_mode(OFF);
-   set_dfltport_mode(ON, A_REVERSE);
-   effect(OUTSIDE, 0, "",
-     "\n" +
-     "--------------------------------------------------------------------\n" +
-     "||  Meanwhile, in " + location_desc + ".\n" +
-     "--------------------------------------------------------------------\n"); 
-   cutto_in_effect = TRUE;
-   return;
-}
-
-public
-void
-end_cutto()
-{
-   /* Freeze current Yliastrum state */
-   find_object(DIRECTOR_OBJ)->set_game_mode(ON);
-   effect(OUTSIDE, 0, "",
-      "\n" +
-      "--------------------------------------------------------------------\n" +
-      "--------------------------------------------------------------------\n");
-   set_dfltport_mode(OFF, A_REVERSE);
-   cutto_in_effect = FALSE;
-#ifdef EFFECT_DEBUG
-   write("Effect Lib: end_cutto() completed.");
-   write_file(ERROR_LOG, "Effect Lib: end_cutto() completed.");
-#endif
-   return;
-}
-
-
-public
-void
-between_acts(int state)
-{
-   between_acts = state;
+    // Deduplicate recipient list and deliver
+    recipients = uniq_array(recipients);
+    foreach (object target in recipients) {
+        deliver_effect(target, visual_msg, sound_or_audible_msg, fx_type);
+    }
 }

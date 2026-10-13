@@ -20,11 +20,11 @@
 //=======================================================================\\
 
 #include <timing.h>
-// #include <localtime.h>
 #include <config.h>
 #include <std_defs.h>
 
 //#define DIRECTOR_DEBUG
+inherit "/libraries/libraries";
 
 // Function prototypes
 void set_game_mode(int x);
@@ -308,7 +308,7 @@ reset_stage()
 
    // Only do this _after_ the first run.
 
-   if (pristine_stage) pristine_stage == FALSE;
+   if (pristine_stage) pristine_stage = FALSE;
    else
    {
       int i;
