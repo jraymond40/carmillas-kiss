@@ -68,7 +68,7 @@ string move(object dest)
       return result;
    }
 
-   move_object(this_obj, dest);
+   move_object(dest);
    result = SUCCEED_STR;
 
    if (TRANSIENT_DEBUG) write (this_obj->query_short() + 

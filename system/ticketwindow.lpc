@@ -325,6 +325,7 @@ void login_check(string str) {
     stage = STG_VERIFY_PASSWD;
 
     error = catch(user_obj = clone_object(user_class));
+    debug_message("error["+error+"] = catch(user_obj["+user_obj+"] = clone_object(user_class["+user_class+"]\n");
     if (error) {
         write_file(ERROR_LOG, "ERROR# " + error + ": ticketwindow.c unable to clone: " + user_class + "\n");
         ticketholder_prompt();

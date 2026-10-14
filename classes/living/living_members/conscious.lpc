@@ -20,7 +20,7 @@
 
 #include <std_defs.h>
 
-private nosave status conscious;    // Are we currently conscious?
+private nosave int conscious;    // Are we currently conscious?
 
 // Hmm we should perceive nothing from our environment, but since I'm not 
 // quite certain how to selectively filter info just yet, we'll just 
@@ -48,7 +48,7 @@ void consciousness()
 //
 // Are we conscious? 
 //
-status conscious()
+int conscious()
 {
    return(conscious);
 }

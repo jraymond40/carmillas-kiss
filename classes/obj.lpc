@@ -102,7 +102,7 @@ void
 save()
 {
    string *dirs;
-   string path, file, tmp, instance_pathname;
+   string path, instance_pathname;
    int i;
    
    instance_pathname = instance_path("");

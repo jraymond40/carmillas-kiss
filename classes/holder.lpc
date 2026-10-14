@@ -134,7 +134,6 @@ string
 add_to_contents(object item)
 {
    int    ptntl_load;
-   object this_obj;
 
    ptntl_load = cumulative_weight + (int) item->query_weight();
  
@@ -183,7 +182,6 @@ query_long()
 {
    int     i;
    int     index;
-   int     list_size;
    int     qty_items_held;
    int     total_unique_items;
    int     living_qty;
@@ -192,7 +190,6 @@ query_long()
    int    *unique_item_qty;
    string *unique_item_desc;
    object *items_held;
-   object *addtl_items;
    string  item_desc;
    string  str;
    string  tmp;

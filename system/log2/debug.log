@@ -1,6 +1,0 @@
-Bad argument 1 to call_other()
-program: system/html_ticketwindow.c, object: system/html_ticketwindow#0 line 822
-'          logon' in 'system/html_ticketwindow.c' ('system/html_ticketwindow#0')line 822
-Bad argument 1 to call_other()
-program: system/html_ticketwindow.c, object: system/html_ticketwindow#1 line 822
-'          logon' in 'system/html_ticketwindow.c' ('system/html_ticketwindow#1')line 822

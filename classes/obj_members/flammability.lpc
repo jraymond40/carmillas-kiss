@@ -16,7 +16,7 @@
 
 private int    burn_duration;
 private int    flammability;
-status burning;
+int burning;
 
 void set_burn_duration(int dur)  { burn_duration = dur; } // In seconds.
 int  query_burn_duration()       { return burn_duration;}

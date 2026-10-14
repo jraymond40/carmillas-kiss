@@ -91,12 +91,12 @@
 #define NPCAIS_DIR           NPCS_DIR
 
 // The directory where user type classes are found
-#define GUEST_OBJ            USERS_DIR+"guest/guest.c"
-#define PLAYER_OBJ           USERS_DIR+"players/player.c"
-#define ADMIN_OBJ            USERS_DIR+"admin/admin.c"
-#define HTML_GUEST_OBJ       USERS_DIR+"guest/html_guest.c"
-#define HTML_PLAYER_OBJ      USERS_DIR+"players/html_player.c"
-#define HTML_ADMIN_OBJ       USERS_DIR+"admin/html_admin.c"
+#define GUEST_OBJ            USERS_DIR+"guest/guest.lpc"
+#define PLAYER_OBJ           USERS_DIR+"players/player.lpc"
+#define ADMIN_OBJ            USERS_DIR+"admin/admin.lpc"
+#define HTML_GUEST_OBJ       USERS_DIR+"guest/html_guest.lpc"
+#define HTML_PLAYER_OBJ      USERS_DIR+"players/html_player.lpc"
+#define HTML_ADMIN_OBJ       USERS_DIR+"admin/html_admin.lpc"
 
 // The directory where user type instances are found
 #define USERS_INST_DIR       INSTANCE_DIR + "users/"

@@ -14,6 +14,8 @@
 #include <config.h>
 #include <english.h>
 
+inherit "/libraries/lib_members/english";
+
 #define OPEN_STR  "open"
 #define CLOSED_STR "closed"
 

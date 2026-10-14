@@ -36,8 +36,6 @@ object connect() {
     object user;
     mixed error;
 
-    debug_message("** in connect().\n");
-
     error = catch(user = clone_object(TICKETWINDOW_OBJ));
     if (error) {
         write("** Fatal error #" + error + " at login.\n");
