@@ -22,6 +22,7 @@
 #pragma strict_types
 
 #include <config.h>
+#include <terminal.h>
 #include "ticketwindow.h"
 
 void welcome();

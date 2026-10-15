@@ -69,7 +69,7 @@ void window_size(int width, int height) {
  * Telnet subnegotiation hook (optional in FluffOS when handling extended
  * VT100/ANSI query responses).
  */
-void telnet_subnegotiation(buffer buf) {
+void telnet_subnegotiation(mixed buf) {
     object player = previous_object();
     if (player && function_exists("handle_telnet_subopt", player)) {
         player->handle_telnet_subopt(buf);

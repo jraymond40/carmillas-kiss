@@ -17,7 +17,6 @@
 //=======================================================================\\
 #include <std_defs.h>
 
-inherit "/classes/virt_init";
 inherit "/classes/living/living";
 inherit "/classes/living/communicate";
 
@@ -30,8 +29,7 @@ string query_cap_name()         { return cap_name;        }
 int    query_human_type()       { return human_type;      }
 void   set_human_type(int type) { human_type = type;      }
 
-void 
-initialize(object where, string who)
+varargs void initialize(object where, string who)
 {
    name = lower_case(who);
    cap_name = capitalize(name);

@@ -126,28 +126,4 @@
 #define KEY_CTRL_U      21      // Up
 #define KEY_CTRL_D      4       // Down
 
-// -- begin gemini added --//
-#define CSI                     "\033["
-
-/* Screen & Cursor */
-#define CURS_CLEAR              CSI "2J"
-#define CURS_HOME               CSI "H"
-#define CURS_SAVE               CSI "s"
-#define CURS_RESTORE            CSI "u"
-
-/* Scrolling Region (DECSTBM) */
-#define CURS_SET_SCROLL(t, b)   sprintf(CSI "%d;%dr", (t), (b))
-#define CURS_RESET_SCROLL       CSI "r"
-
-/* Cursor Movement (1-based: row, col) */
-#define CURS_MOVE(r, c)         sprintf(CSI "%d;%dH", (r), (c))
-#define CURS_CLEAR_LINE         CSI "2K"
-#define CURS_CLEAR_TO_EOL       CSI "K"
-
-/* Text Attributes */
-#define CURS_RESET              CSI "0m"
-#define CURS_BOLD               CSI "1m"
-#define CURS_REVERSE            CSI "7m"
-// -- end gemini added --//
-
 #endif /* CURSES_H */

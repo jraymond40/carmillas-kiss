@@ -17,10 +17,10 @@ inherit "/classes/living/human/competitor_members/vampire";
 inherit "/classes/living/human/competitor_members/hunter";
 inherit "/classes/living/human/competitor_members/victim";
 
-private nosave int time_of_login;
+private nosave int login_time;
 
-int  query_age()  { return (time_of_login - time()); }
-void initialize() { time_of_login = time();          }
+int  query_age()  { return (login_time - time()); }
+void initialize() { login_time = time();          }
 void heart_beat() { vampire::check();                }
 
 void

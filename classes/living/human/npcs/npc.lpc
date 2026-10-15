@@ -55,7 +55,7 @@ create()
    set_human_type(NPC);
 }
 
-void initialize(object where, string who)
+varargs void initialize(object where, string who)
 {
    human::initialize(where, who);
    set_long("A character named " + query_cap_name() + ".\n");

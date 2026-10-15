@@ -36,7 +36,7 @@ add_costume_name(string name)
    // So assure before proceeding.
    size = sizeof(costume_names);
    costume_names = add_to_array(costume_names, name);
-   if ((costume_names) == size) return FAIL;
+   if (sizeof(costume_names) == size) return FAIL;
    else return SUCCEED;
 }
 
@@ -49,7 +49,7 @@ add_costume_description(string description)
    // So assure before proceeding.
    size = sizeof(costume_descriptions);
    costume_descriptions = add_to_array(costume_descriptions, description);
-   if ((costume_descriptions) == size) return FAIL;
+   if (sizeof(costume_descriptions) == size) return FAIL;
    else return SUCCEED;
 }
 

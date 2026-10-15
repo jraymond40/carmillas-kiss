@@ -19,7 +19,7 @@
 #include <std_defs.h>
 #include <config.h>
 
-void initialize(object where, object ticketwindow);
+varargs void initialize(object where, object ticketwindow);
 inherit "/classes/living/human/users/user";
 nosave object ticketwindow; // The ticketwindow that passed us in.
 private nosave int    pass_in_time;   // At what time.

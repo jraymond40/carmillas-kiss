@@ -13,7 +13,7 @@
 #include <std_defs.h>
 #include <config.h>
 
-void initialize(object where, string num);
+varargs void initialize(object where, string num);
 inherit "/classes/inanimate/transients/key";
 
 void

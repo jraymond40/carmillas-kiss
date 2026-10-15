@@ -20,8 +20,6 @@
 inherit "/classes/living/human/human";
 inherit "/classes/living/human/users/ui";
 
-private nosave int time_of_login;
-
 void
 restart()
 {
@@ -29,11 +27,18 @@ restart()
    ui::restart();
 }
 
-void
-initialize(object where, string who)
+private nosave int time_of_login;
+
+varargs void initialize(object where, string who)
 {
    time_of_login = time();
    human::initialize(where, who);
+}
+
+int
+query_time_of_login()
+{
+   return time_of_login;
 }
 
 void
@@ -43,19 +48,19 @@ init_actions()
    human::init_actions();
 }
 
-void 
+string 
 move(object dstloc, string dir) 
 {
    object curloc;
 
    curloc = environment(this_object());
-   human::move(dstloc, dir);
+    string move_msg = human::move(dstloc, dir);
 
    // Scroll only if we've moved.
    if (curloc != environment(this_object()) )
       ui::scroll_map(curloc, dstloc);
 
-   return;
+   return move_msg;
 }
 
 void 

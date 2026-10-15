@@ -8,6 +8,7 @@
 /system/daemons/commons_mgr
 /system/logon
 /classes/living/human/users/players/player
+/classes/living/human/users/admin/admin
 /instances/actions/expressions:
 /instances/actions/get
 /instances/actions/drop

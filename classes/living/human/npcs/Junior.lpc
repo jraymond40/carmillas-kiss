@@ -15,7 +15,7 @@
 #include <std_defs.h>
 #include <npc_defs.h>
 
-public void initialize(object where);
+public varargs void initialize(object where);
 
 inherit "/classes/living/human/npcs/npc";
 

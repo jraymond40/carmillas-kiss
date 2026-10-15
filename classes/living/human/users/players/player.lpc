@@ -31,7 +31,6 @@ private        int    total_usage;
 private        int    usage_since_billing;
 private nosave int    billing_start_time;
 private nosave int    billing_mode = OFF;
-private nosave int    time_of_login;
 
 void   set_ticketholder(string str) { ticketholder_name = str; }
 string query_ticketholder()         { return ticketholder_name; }
@@ -50,7 +49,7 @@ create()
    set_max_bearable (250);   /* Carriable, in kilograms */
 }
 
-void 
+varargs void 
 initialize(object where, string name) 
 {
    if (! query_ticketholder())
@@ -63,7 +62,6 @@ initialize(object where, string name)
    competitor::initialize();
    user::initialize(where,  query_dflt_costume()); 
    set_long(query_costume_description());
-   time_of_login = time();
 }
 
 void
@@ -84,7 +82,7 @@ instance_path(string instance)
 void
 save()
 {
-   total_usage += (time() - time_of_login);
+   total_usage += (time() - query_time_of_login());
    billing(OFF);
    user::save();
 }

@@ -19,16 +19,11 @@
 #pragma strict_types
 
 #include <config.h>
+#include <terminal.h>
 #include <std_defs.h>
 
 #define EFFECT_BANNER_ROW    11
 #define EFFECT_BANNER_COLS   80
-
-/* Terminal Sensory Controls */
-#define TERM_BELL            "\007"
-#define TERM_FLASH           CSI "?5h" CSI "?5l"       // Screen flash (reverse video toggle)
-#define TERM_INVERT_ON       CSI "?5h"
-#define TERM_INVERT_OFF      CSI "?5l"
 
 #ifndef GLOBAL
 #define GLOBAL               8  // Mudlib-wide / Everywhere

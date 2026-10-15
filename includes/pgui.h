@@ -17,3 +17,4 @@
 #define MAX_ENTRY_LENGTH 20 /* Maximum length an entry str can be */
 #define MAX_PORTS        20
 #define MAX_PORT_WIDTH   80 /* Maximum width any port can be */
+

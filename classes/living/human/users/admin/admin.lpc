@@ -40,6 +40,7 @@ create()
 }
 
 public
+varargs
 void
 initialize(object where, string name)
 {
