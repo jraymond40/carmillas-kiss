@@ -118,7 +118,7 @@ void update_status_bar() {
     string bar_output;
     object env = environment(this_object());
     string loc_name = env ? (string)env->query_short() : "Somewhere";
-    string uname = query_cap_name ? (string)this_object()->query_cap_name() : "User";
+    string uname = this_object()->query_cap_name() ? (string)this_object()->query_cap_name() : "User";
 
     status_line = sprintf(" %s | %s | Term: %dx%d",
         uname,
@@ -176,7 +176,7 @@ class MenuPort {
     int      start_y;
     int      start_x;
     int      is_active;
-};
+}
 
 /* --- Virtual Window Buffers --- */
 private nosave class MenuPort *menu;
@@ -463,7 +463,7 @@ void process_user_input(string str) {
     }
     if (str == "\033[C") { // Right arrow
         if (active_gadget > 0 && active_gadget < 3) {
-            choice = selectentry(menu[active_gadget - 1]);
+            string choice = selectentry(menu[active_gadget - 1]);
             cmd[active_gadget - 1] = choice;
             menu[active_gadget - 1]->is_active = 0;
             active_gadget++;
@@ -495,10 +495,35 @@ void actions_update() {
     doupdate();
 }
 
-void quit() {
-    tell_object(this_object(), CURS_CLEAR + CURS_HOME);
-}
-
 void restart() {
     actions_update();
+}
+
+void
+scroll_map(object curloc, object dstloc)
+{
+   int *curloc_coord;
+   int *dstloc_coord;
+   int x,y;
+
+   if(!curloc || !dstloc) return;
+   if((int) curloc->query_object_type() != LOCATION ||
+      (int) dstloc->query_object_type() != LOCATION) return;
+
+   curloc_coord = curloc->query_coordinates();
+   dstloc_coord = dstloc->query_coordinates();
+
+#ifdef UI_DEBUG
+   write("Curloc = " + curloc_name + "\nDstloc = " + dstloc_name + "\n");
+#endif
+   write("\n"); // Sticky map bug work around...?
+
+   x = ((dstloc_coord[0] - curloc_coord[0]) * MAPBLOCK_WIDTH) +
+       ((dstloc_coord[2] - curloc_coord[2]) * MAP_WIDTH/2);
+   y = (dstloc_coord[1] - curloc_coord[1]) * MAPBLOCK_HEIGHT;
+
+   scrollport(mapport, y, x);
+   portrefresh(mapport);
+
+   return;
 }

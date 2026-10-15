@@ -26,7 +26,7 @@ void create()
    this_object()->set_transiency(TRANSIENT);
 }
 
-string move(object dest) 
+string move(object dest, string dir) 
 {
    string result;
    object environ;

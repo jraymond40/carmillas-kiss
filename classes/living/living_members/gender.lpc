@@ -23,8 +23,6 @@
 
 #include <std_defs.h>
 
-inherit "/libraries/lib_members/english";
-
 private string gender = "";
 
 int 

@@ -22,8 +22,6 @@
 #include <config.h>
 #include <commons.h>
 
-void  move(object dest, string dir);
-
 inherit "/classes/obj";
 inherit "/classes/container";
 inherit "/classes/transient";
@@ -114,7 +112,7 @@ void remove()
 // Move the living to another location. Give the appropriate
 // message to on-lookers.
 //
-void 
+string 
 move(object dest, string dir) 
 {
    object obj;
@@ -139,7 +137,7 @@ move(object dest, string dir)
       capitalize(specific_obj(obj)) + " enters" + 
       (loc_left ? " from the " + (string) loc_left->query_short() : "" )  + ".\n");
 
-   return;
+   return move_msg;
 }
 
 string *use_recipient(object user, object agent)
@@ -204,3 +202,9 @@ string *use_recipient(object user, object agent)
       });
    }
 }
+
+string query_pronoun()    { return gender::query_pronoun(); }
+string query_possessive() { return gender::query_possessive(); }
+string query_objective()  { return gender::query_objective(); }
+string query_long()       { return container::query_long(); }
+

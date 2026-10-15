@@ -46,7 +46,6 @@ init_actions()
 void 
 move(object dstloc, string dir) 
 {
-   string result;
    object curloc;
 
    curloc = environment(this_object());
@@ -54,7 +53,7 @@ move(object dstloc, string dir)
 
    // Scroll only if we've moved.
    if (curloc != environment(this_object()) )
-      scroll_map(curloc, dstloc);
+      ui::scroll_map(curloc, dstloc);
 
    return;
 }

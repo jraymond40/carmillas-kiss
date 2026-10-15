@@ -26,6 +26,11 @@ inherit "system/MudOS";
 
 int valid_save_binary(string filename) { return 1; }
 
+mixed make_path_absolute(string path) {
+    // return Amylaar::make_path_absolute(path);
+    return MudOS::make_path_absolute(path);
+}
+
 // Driver refers to this routine to connect a user to the system.
 //
 // Order of events:

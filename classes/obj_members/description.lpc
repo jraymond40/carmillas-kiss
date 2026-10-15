@@ -211,5 +211,3 @@ int  query_aggregate()       { return aggregate; }
 string query_pronoun()    { return (aggregate ? "they" : "it"); }
 string query_possessive() { return (aggregate ? "their" : "its"); }
 string query_objective()  { return (aggregate ? "they" : "it"); }
-
-
