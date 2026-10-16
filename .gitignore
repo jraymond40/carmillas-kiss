@@ -4,5 +4,6 @@ system/log/debug.log
 system/log/shutdown.log
 system/log/domain_stats
 system/log/author_stats
+console.log
 ERROR_LOG
 ck.cfg
