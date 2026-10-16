@@ -31,7 +31,8 @@ websocket http dir : www                # a websocket port requires this
 
 # Absolute path to the mudlib root (this path is not relative to the mudlib).
 # (required)
-mudlib directory : /Users/jaysonraymond/projects/rit/current/carmillas-kiss
+# define mudlib dir from cmd line
+mudlib directory : $MUDLIB_ABS_DIR
 
 # Filesystem directory for debug.log and stats files, resolved relative to the
 # driver's working directory (leading slashes are stripped); not a mudlib
